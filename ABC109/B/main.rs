@@ -54,6 +54,7 @@ macro_rules! read_value {
     };
 }
 
+use std::collections::BTreeSet;
 fn main() {
     input!{
         n: usize,
@@ -68,12 +69,18 @@ fn main() {
         }
     }
 
-    let mut set = std::collections::BTreeSet::new();
-    for w in w.iter() {
-        if set.contains(w) {
-            ans = "No";
-        }
-        set.insert(w);
-    }
+    let set = w.iter().collect::<BTreeSet<_>>();
+    if set.len() != n { ans = "No"; }
+    // println!("{:?}", set);
+    // let a = vec!['h', 'o', 'g', 'e'];
+    // println!("{}", set.contains(&a));
+
+    // let mut set = std::collections::BTreeSet::new();
+    // for w in w.iter() {
+    //     if set.contains(w) {
+    //         ans = "No";
+    //     }
+    //     set.insert(w);
+    // }
     println!("{}", ans);
 }
