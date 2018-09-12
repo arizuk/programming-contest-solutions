@@ -1,16 +1,13 @@
 fn binary_search(t: usize, ks: &[usize]) -> bool {
   println!("##--- search {} in {:?}", t, ks);
   let (mut s, mut e) = (0, ks.len() - 1);
-  loop {
+  while s <= e {
     let i = (s + e) / 2;
     println!("s={} e={} i={} k={}", s, e, i, ks[i]);
     match ks[i] {
       x if x == t => return true,
       x if x < t => s = i + 1,
-      _ => e = i,
-    }
-    if s > e || (s == i && e == i) {
-      break;
+      _ => e = i - 1,
     }
   }
   false
