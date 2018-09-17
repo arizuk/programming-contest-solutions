@@ -69,12 +69,11 @@ fn main() {
         ans.push((i+1, i+2, 2u32.pow(i)));
     }
 
-    let mut t = l - 2u32.pow(r);
+    let mut t = l;
     for i in (0..r).rev() {
-        let p = 2u32.pow(i);
-        if p <= t {
-            t -= p;
-            ans.push( (i+1, r+1, 2u32.pow(r) + 2u32.pow(i)) ) ;
+        if t - 2u32.pow(r) >= 2u32.pow(i) {
+            t -= 2u32.pow(i);
+            ans.push( (i+1, r+1, t) ) ;
         }
     }
 
