@@ -35,7 +35,7 @@ const parseBody = (body) => {
 
 const cheerio = require('cheerio')
 const url = getUrl()
-
+console.log(`Download testcases from ${url}.`)
 request(url, (error, response, body) => {
   if (error) {
     console.log(error)
