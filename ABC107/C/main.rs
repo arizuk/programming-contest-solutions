@@ -57,7 +57,7 @@ macro_rules! read_value {
 use std::cmp;
 fn cost(xs: &[i32]) -> usize {
     let f = xs[0];
-    let l = xs[xs.len()-1];
+    let l = xs[xs.len() - 1];
 
     if f < 0 && l > 0 {
         let len = l - f + cmp::min(l.abs(), f.abs());
@@ -80,7 +80,7 @@ fn main() {
     // println!("{:?}", xs);
 
     let mut min = 0;
-    for i in 0..(xs.len()-k as usize + 1) {
+    for i in 0..(xs.len() - k as usize + 1) {
         let e = i + k as usize;
         if min == 0 {
             min = cost(&xs[i..e]);

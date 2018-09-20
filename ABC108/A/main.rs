@@ -59,7 +59,7 @@ fn main() {
         k: usize
     }
     if k % 2 == 1 {
-        println!("{}", (k/2) * ((k+1)/2));
+        println!("{}", (k / 2) * ((k + 1) / 2));
     } else {
         println!("{}", k * k / 4);
     }

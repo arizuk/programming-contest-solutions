@@ -65,8 +65,8 @@ fn main() {
     } else {
         let mut cnt: i32 = 0;
         for i in 0..n + 1 {
-            if i % k == k/2 {
-              cnt += 1;
+            if i % k == k / 2 {
+                cnt += 1;
             }
         }
         println!("{}", (n / k).pow(3) + cnt.pow(3));

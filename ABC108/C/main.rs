@@ -61,13 +61,17 @@ fn main() {
     }
 
     let mut ans = 0;
-    for a in 1..(n+1) {
-        for i in (a/k)..(n+1) {
+    for a in 1..(n + 1) {
+        for i in (a / k)..(n + 1) {
             let bc = i * k - a;
-            if bc > n { break };
-            if bc <= 0 { continue };
+            if bc > n {
+                break;
+            };
+            if bc <= 0 {
+                continue;
+            };
 
-            for b in 1..(bc-1) {
+            for b in 1..(bc - 1) {
                 let c = bc - b;
                 if (b + a) % k == 0 && (c + a) % k == 0 {
                     ans += 1;

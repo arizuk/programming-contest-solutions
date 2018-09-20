@@ -61,11 +61,11 @@ fn main() {
         x2: i32,
         y2: i32,
     }
-    let v = (-(y2 - y1), x2 -x1);
+    let v = (-(y2 - y1), x2 - x1);
     let x3 = x2 + v.0;
     let y3 = y2 + v.1;
 
-    let v = (-(y3 - y2), x3 -x2);
+    let v = (-(y3 - y2), x3 - x2);
     let x4 = x3 + v.0;
     let y4 = y3 + v.1;
     println!("{} {} {} {}", x3, y3, x4, y4);

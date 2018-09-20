@@ -60,24 +60,26 @@ fn main() {
     }
 
     let mut r = 0;
-    while 2u32.pow(r+1) <= l { r += 1 };
+    while 2u32.pow(r + 1) <= l {
+        r += 1
+    }
 
     let mut ans = vec![];
 
     for i in 0..r {
-        ans.push((i+1, i+2, 0));
-        ans.push((i+1, i+2, 2u32.pow(i)));
+        ans.push((i + 1, i + 2, 0));
+        ans.push((i + 1, i + 2, 2u32.pow(i)));
     }
 
     let mut t = l;
     for i in (0..r).rev() {
         if t - 2u32.pow(r) >= 2u32.pow(i) {
             t -= 2u32.pow(i);
-            ans.push( (i+1, r+1, t) ) ;
+            ans.push((i + 1, r + 1, t));
         }
     }
 
-    println!("{} {}", r+1, ans.len());
+    println!("{} {}", r + 1, ans.len());
     for &(i, j, c) in ans.iter() {
         println!("{} {} {}", i, j, c);
     }

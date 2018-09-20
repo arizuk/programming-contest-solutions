@@ -54,5 +54,4 @@ macro_rules! read_value {
     };
 }
 
-fn main() {
-}
+fn main() {}
