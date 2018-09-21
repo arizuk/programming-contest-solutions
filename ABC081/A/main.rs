@@ -54,11 +54,14 @@ macro_rules! read_value {
     };
 }
 
-#[allow(unused_imports)]
-use std::cmp
-
 fn main() {
     input!{
-        n: usize,
+        s: String
     }
+    let s = s.chars().collect::<Vec<char>>();
+    let mut cnt = 0;
+    for i in 0..3 {
+        if s[i] == '1' { cnt += 1 };
+    }
+    println!("{}", cnt);
 }

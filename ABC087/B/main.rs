@@ -54,11 +54,24 @@ macro_rules! read_value {
     };
 }
 
-#[allow(unused_imports)]
-use std::cmp
-
 fn main() {
     input!{
-        n: usize,
+        a: usize,
+        b: usize,
+        c: usize,
+        x: usize,
     }
+
+    let mut cnt = 0;
+    for i in 0..(a+1) {
+        for j in 0..(b+1) {
+            for k in 0..(c+1) {
+                let sum = 500 * i + 100 * j + 50 * k;
+                if sum == x {
+                    cnt += 1
+                }
+            }
+        }
+    }
+    println!("{}", cnt);
 }

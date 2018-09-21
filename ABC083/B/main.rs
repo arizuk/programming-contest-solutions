@@ -54,11 +54,23 @@ macro_rules! read_value {
     };
 }
 
-#[allow(unused_imports)]
-use std::cmp
-
 fn main() {
     input!{
         n: usize,
+        a: usize,
+        b: usize,
     }
+    let mut total = 0;
+    for i in 1..n+1 {
+        let mut j = i;
+        let mut sum = 0;
+        while j > 0 {
+            sum += j % 10;
+            j /= 10;
+        }
+        if sum >= a && sum <= b {
+            total += i;
+        }
+    }
+    println!("{}", total);
 }

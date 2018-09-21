@@ -54,11 +54,22 @@ macro_rules! read_value {
     };
 }
 
-#[allow(unused_imports)]
-use std::cmp
-
 fn main() {
     input!{
         n: usize,
+        a: [usize; n],
+    }
+    let mut a = a;
+    let mut cnt = 0;
+    loop {
+        for i in 0..a.len() {
+            if a[i] % 2 == 0 {
+                a[i] = a[i] / 2;
+            } else {
+                println!("{}", cnt);
+                return;
+            }
+        }
+        cnt += 1;
     }
 }

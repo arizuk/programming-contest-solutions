@@ -54,11 +54,60 @@ macro_rules! read_value {
     };
 }
 
+
+fn median(a: &[usize], x: usize) -> bool {
+    let mut s: Vec<i32> = vec![0; a.len()];
+    s[0] = if a[0] >= x { 1 } else { -1 };
+    for i in 1..a.len() {
+        s[i] = s[i-1] + if a[i] >= x { 1 } else { -1 };
+    }
+    println!("{:?} a={:?} x={}", s, a, x);
+    // println!("x={}", x);
+
+    let mut cnt = 0;
+    let mut ttl = 0;
+    for l in 0..a.len() {
+        for r in l..a.len() {
+            let sum = s[r] - if l >= 1 { s[l-1] } else { 0 };
+            if sum >= 0 { cnt += 1 };
+            // println!("{:?} {}", &a[l..(r+1)], sum);
+            ttl += 1;
+        }
+    }
+    // println!("x={} cnt={} ttl={}", x, cnt, ttl);
+
+    let half = if ttl % 2 == 1 { ttl/2 + 1 } else { ttl/2 };
+    if cnt >= half { true } else { false }
+}
+
+fn solve(a: &[usize], b: &[usize]) -> usize {
+  let mut s = 0i32;
+  let mut e = a.len() as i32 - 1;
+
+  let mut last_x = 0;
+  while s <= e {
+    let i = (s + e) / 2;
+    // println!("s={} e={} i={}", s, e, i);
+
+    let x = b[i as usize];
+    if median(a, x) {
+        // println!("{} is ok", x);
+        last_x = x;
+        s = i + 1;
+    } else {
+        // println!("{} is ng", x);
+        e = i - 1;
+    }
+  }
+  last_x
+}
+
 fn main() {
     input!{
         n: usize,
         a: [usize; n]
     }
-    let mut a = a;
-    a.sort();
+    let mut b = a.to_vec();
+    b.sort();
+    println!("{}", solve(&a, &b));
 }

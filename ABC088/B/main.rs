@@ -55,10 +55,24 @@ macro_rules! read_value {
 }
 
 #[allow(unused_imports)]
-use std::cmp
+use std::cmp;
 
 fn main() {
     input!{
         n: usize,
+        a: [usize; n],
     }
+    let mut a = a;
+    let mut alice = 0;
+    let mut bob = 0;
+    for i in 1..n+1 {
+        let mi =  a.iter().enumerate().max_by_key(|&(_, v)| v).unwrap().0;
+        if i % 2 == 1 {
+            alice += a[mi];
+        } else {
+            bob += a[mi];
+        }
+        a[mi] = 0;
+    }
+    println!("{}", alice - bob);
 }
