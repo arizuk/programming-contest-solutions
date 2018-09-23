@@ -59,6 +59,27 @@ use std::cmp;
 
 fn main() {
     input!{
-        n: usize,
+        s: chars,
+        t: chars,
     }
+    let mut t1: [i32; 26] = [-1; 26];
+    let mut t2: [i32; 26] = [-1; 26];
+    for i in 0..s.len() {
+        let a = s[i] as i32 - 'a' as i32;
+        let b = t[i] as i32 - 'a' as i32;
+
+        let ai = a as usize;
+        let bi = b as usize;
+
+        if t1[ai] != -1 || t2[bi] != -1 {
+            if t1[ai] != b || t2[bi] != a {
+                println!("{}", "No");
+                return
+            }
+        } else {
+            t1[ai] = b;
+            t2[bi] = a;
+        }
+    }
+    println!("{}", "Yes");
 }

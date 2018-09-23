@@ -60,5 +60,34 @@ use std::cmp;
 fn main() {
     input!{
         n: usize,
+        m: usize,
+        xc: i32,
+        yc: i32,
+        xs: [i32; n],
+        ys: [i32; m],
     }
+
+    for z in (xc+1)..(yc+1) {
+        let mut ok = true;
+        for i in 0..n {
+            if xs[i] >= z {
+                ok = false;
+                break;
+            }
+        }
+        if ok == false { continue; }
+
+        for i in 0..m {
+            if ys[i] < z {
+                ok = false;
+                break;
+            }
+        }
+
+        if ok {
+            println!("{}", "No War");
+            return
+        }
+    }
+    println!("{}", "War")
 }

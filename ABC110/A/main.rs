@@ -59,6 +59,12 @@ use std::cmp;
 
 fn main() {
     input!{
-        n: usize,
+        a: usize,
+        b: usize,
+        c: usize,
     }
+    let mut n = [a, b, c];
+    n.sort();
+    // println!("{:?}", n);
+    println!("{}", n[2] * 10 + n[1] + n[0]);
 }
