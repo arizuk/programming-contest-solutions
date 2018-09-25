@@ -4,7 +4,7 @@ const fs = require('fs')
 
 const getUrl = () => {
   if (process.argv.length > 2) {
-    return process.argv[2]
+    return process.argv[2];
   } else {
     const dirs = process.env.PWD.split(path.sep).reverse()
     const rank = dirs[0].toLowerCase()
@@ -13,7 +13,7 @@ const getUrl = () => {
   }
 }
 
-const parseBody = (body) => {
+const parseBody = body => {
   const $ = cheerio.load(body)
   $('#task-statement .part').each(function(i, e) {
     const title = $(this).find('h3').text()
@@ -33,13 +33,27 @@ const parseBody = (body) => {
   })
 }
 
+const handleUrl = url => {
+  console.log(`Download testcases from ${url}.`)
+  request(url, (error, response, body) => {
+    if (error) {
+      console.log(error)
+    } else {
+      parseBody(body)
+    }
+  })
+}
+
+const handleLocalFile = path => {
+  const body = fs.readFileSync(path, 'utf8')
+  parseBody(body)
+}
+
 const cheerio = require('cheerio')
 const url = getUrl()
-console.log(`Download testcases from ${url}.`)
-request(url, (error, response, body) => {
-  if (error) {
-    console.log(error)
-  } else {
-    parseBody(body)
-  }
-})
+
+if (url.match(/^http/)) {
+  handleUrl(url)
+} else {
+  handleLocalFile(url)
+}
