@@ -59,6 +59,14 @@ use std::cmp::{min, max};
 
 fn main() {
     input!{
-        n: usize,
+        s: chars,
+        k: usize,
     }
+    for i in 0..k {
+        if s[i] != '1' {
+            println!("{}", s[i]);
+            return;
+        }
+    }
+    println!("{}", '1');
 }

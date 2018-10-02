@@ -55,10 +55,20 @@ macro_rules! read_value {
 }
 
 #[allow(unused_imports)]
-use std::cmp::{min, max};
+use std::cmp;
 
 fn main() {
     input!{
         n: usize,
     }
+    for i in 0..(n/4)+2 {
+        for j in 0..(n/7)+2 {
+            let v = 4*i + 7*j;
+            if n == v {
+                println!("{}", "Yes");
+                return;
+            }
+        }
+    }
+    println!("{}", "No");
 }
