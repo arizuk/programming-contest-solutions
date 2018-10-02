@@ -1,17 +1,28 @@
+fn binaryserach(mut l: usize, mut r: usize, f: &Fn(usize) -> bool) -> usize {
+    while r - l > 1 {
+        let m = l + (r - l) / 2;
+        if f(m) {
+            println!("{:>2} -  {}  <- {}", l, m, r);
+            r = m;
+        } else {
+            println!("{:>2} -> {}   - {}", l, m, r);
+            l = m;
+        }
+    }
+    r
+}
+
+
 fn main() {
-  let s = [
-      (0, 0), (2, 1), (4, 1), (5, 1), (3, 1),
-      (1, 2), (2, 3), (4, 5), (5, 8), (3, 13),
-      (1, 21), (2, 34), (4, 55)
-    ];
+  let r = 99;
+  let l = 0;
 
-    // assert_eq!(s.binary_search_by_key(&17, |&(a,b)| b * 2),  Ok(8));
-    println!("{:?}", s.binary_search_by_key(&24, |&(a,b)| b * 3));
-  // assert_eq!(s.binary_search_by_key(&4, |&(a,b)| b),   Err(7));
-  // assert_eq!(s.binary_search_by_key(&100, |&(a,b)| b), Err(13));
-
-  // let r = s.binary_search_by_key(&true, |&(a,b)| b == 8);
-  // println!("{:?}", r);
-
-  std::cmp()
+  let mut s = vec![0; 100];
+  for i in 0..s.len() {
+    s[i] = i * 2;
+  }
+  let res = binaryserach(l, r, &|m| {
+    s[m] >= 50
+  });
+  println!("i={:?} v={}", res, s[res]);
 }

@@ -59,27 +59,16 @@ use std::cmp;
 
 const INF: usize = std::usize::MAX;
 
-fn divide(a: &[usize]) -> (usize, usize, usize) {
-    let mut t = 0;
-    for i in 0..a.len() {
-        t += a[i];
-    }
-
-    let mut min = INF;
-    let mut d = 0;
-    for i in 0..a.len() {
-        d += a[i];
-        // println!("i={} d={} a[i]={} t={}", i, d, a[i], t);
-
-        let s = (d as isize - (t - d) as isize).abs() as usize;
-        if s < min {
-            min = s;
+fn binaryserach(mut l: usize, mut r: usize, f: &Fn(usize) -> bool) -> usize {
+    while r - l > 1 {
+        let m = l + (r - l) / 2;
+        if f(m) {
+            r = m;
         } else {
-            // println!("i={} d={} a[i]={} t={}", i, d, a[i], t);
-            return (i-1, d - a[i], t - (d - a[i]));
+            l = m;
         }
     }
-    (0, a[0], 0)
+    r
 }
 
 fn main() {
@@ -87,37 +76,42 @@ fn main() {
         n: usize,
         aa: [usize; n],
     }
-    let (i, s1, s2) = divide(&aa);
+    let mut s = vec![0; n+1];
+    for i in 0..aa.len() {
+        s[i+1] = aa[i] + s[i];
+    }
+    let mut ans = INF;
+    for i in 2..s.len()-2 {
+        let l0 = binaryserach(1, i, &|m| {
+            let b = s[m];
+            let c = s[i] - s[m];
+            return b >= c;
+        });
 
-    let mut divs = vec![
-        (0, i+1, s1),
-        (i+1, aa.len(), s2),
-    ];
+        let r0 = binaryserach(i, s.len()-1, &|m| {
+            let b = s[m] - s[i];
+            let c = s[s.len()-1] - s[m];
+            return b >= c;
+        });
 
-    for _ in 0..2 {
-        println!("{:?}", divs);
+        let li_l = cmp::max(1 as isize, l0 as isize - 4) as usize;
+        let li_u = cmp::min(i as isize, l0 as isize + 4) as usize;
+        let ri_l = cmp::max(i as isize, r0 as isize -4) as usize;
+        let ri_u = cmp::min(s.len(), r0 + 4);
 
-        let mut max = 0;
-        let mut mi = 0;
-        for i in 0..divs.len() {
-            if divs[i].1 - divs[i].0 > 1 && divs[i].2 > max  {
-                max = divs[i].2;
-                mi = i;
+        // println!("l0={} r0={}", l0, r0);
+        for j in li_l..li_u {
+            for k in ri_l..ri_u {
+                let p = s[j] - s[0];
+                let q = s[i] - s[j];
+                let r = s[k] - s[i];
+                let n = s[s.len()-1] - s[k];
+                let max = cmp::max(cmp::max(p, q), cmp::max(r, n));
+                let min = cmp::min(cmp::min(p, q), cmp::min(r, n));
+                ans = cmp::min(max - min, ans);
+                // println!("j={} i={} k={} {:?} | {:?} | {:?} | {:?} {}", j, i, k, &s[0..j+1], &s[j+1..i+1], &s[i+1..k+1], &s[k+1..], max-min);
             }
         }
-        let div = divs[mi];
-        let (i, s1, s2) = divide(&aa[div.0..div.1]);
-        divs.remove(mi);
-        divs.insert(mi, (div.0, div.0+i+1, s1));
-        divs.insert(mi+1, (div.0+i+1, div.1, s2));
     }
-
-    let mut min = INF;
-    let mut max = 0;
-    for i in 0..4 {
-        min = cmp::min(min, divs[i].2);
-        max = cmp::max(max, divs[i].2);
-    }
-    println!("{:?}", divs);
-    println!("{}", max - min);
+    println!("{}", ans);
 }
