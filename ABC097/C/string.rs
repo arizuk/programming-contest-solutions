@@ -59,14 +59,14 @@ use std::cmp::{min, max};
 
 fn main() {
     input!{
-        s: chars,
+        s: String,
         k: usize,
     }
     let mut strs = Vec::new();
     for i in 0..s.len() {
         let l = min(i+5, s.len());
         for j in i..l {
-            let ss = s[i..j+1].iter().map(|&v| v).collect::<String>();
+            let ss = s[i..j+1].to_string();
             strs.push(ss)
         }
     }
