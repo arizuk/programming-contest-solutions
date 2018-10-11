@@ -65,4 +65,18 @@ macro_rules! debug {
 use std::cmp::{min, max};
 
 fn main() {
+    input!{
+      x: u64,
+      y: u64,
+    }
+    let mut i = x;
+    let mut ans = 0;
+    loop {
+        ans += 1;
+        if i > y/2 {
+            break;
+        }
+        i = i * 2;
+    }
+    println!("{}", ans);
 }

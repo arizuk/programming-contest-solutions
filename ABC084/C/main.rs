@@ -54,15 +54,25 @@ macro_rules! read_value {
     };
 }
 
-#[allow(unused_macros)]
-macro_rules! debug {
-    ($($a:expr),*) => {
-        println!(concat!($(stringify!($a), "={:?} "),*), $($a),*);
-    }
-}
-
 #[allow(unused_imports)]
 use std::cmp::{min, max};
 
 fn main() {
+    input!{
+      n: usize,
+      csfs: [(usize, usize, usize); n-1],
+    }
+    for i in 0..n-1 {
+        let mut t = 0;
+        for j in i..n-1 {
+            let (c, s, f) = csfs[j];
+            t = max(t, s);
+            if t % f != 0 {
+                t = t / f * f + f;
+            }
+            t += c;
+        }
+        println!("{}", t);
+    }
+    println!("{}", 0);
 }

@@ -63,6 +63,26 @@ macro_rules! debug {
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
+use std::collections::HashMap;
 
 fn main() {
+    input!{
+      n: usize,
+      aa: [usize; n],
+    }
+    let mut map: HashMap<usize, usize> = HashMap::new();
+    for i in 0..n {
+        let e = map.entry(aa[i]).or_insert(0);
+        *e += 1;
+    }
+
+    let mut ans = 0;
+    for (&v, &cnt) in map.iter() {
+        if cnt < v {
+            ans += cnt;
+        } else {
+            ans += cnt - v;
+        }
+    }
+    println!("{}", ans);
 }

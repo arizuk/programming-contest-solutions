@@ -65,4 +65,33 @@ macro_rules! debug {
 use std::cmp::{min, max};
 
 fn main() {
+    input!{
+      n: usize,
+      aa: [usize; n],
+    }
+    let mut aa = aa;
+    aa.sort();
+
+    let mut ans = 0;
+    let mut cnt = 1;
+    for i in 1..n {
+        if aa[i] == aa[i-1] {
+            cnt += 1;
+            continue;
+        }
+
+        if cnt < aa[i-1] {
+            ans += cnt;
+        } else {
+            ans += cnt - aa[i-1];
+        }
+        cnt = 1;
+    }
+
+    if cnt < aa[aa.len()-1] {
+        ans += cnt;
+    } else {
+        ans += cnt - aa[aa.len()-1];
+    }
+    println!("{}", ans);
 }
