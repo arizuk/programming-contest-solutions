@@ -58,4 +58,15 @@ macro_rules! read_value {
 use std::cmp::{min, max};
 
 fn main() {
+    input!{
+      n: usize,
+      m: usize,
+    }
+    if n == 1 && m == 1 {
+        println!("{}", 1);
+    } else if n == 1 || m == 1 {
+        println!("{}", n + m - 3);
+    } else {
+        println!("{}", (n - 2) * (m - 2));
+    }
 }

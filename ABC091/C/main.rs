@@ -58,4 +58,31 @@ macro_rules! read_value {
 use std::cmp::{min, max};
 
 fn main() {
+    input!{
+      n: usize,
+      abs: [[i64;2]; n],
+      cds: [[i64;2]; n],
+    }
+    let mut cds = cds;
+    cds.sort_by_key(|v| v[0]);
+    let mut used = vec![false; n];
+    let mut cnt = 0;
+    for i in 0..n {
+        let mut m = -1;
+        let mut mj = 0;
+        for j in 0..n {
+            if used[j] { continue }
+            if abs[j][0] < cds[i][0] && abs[j][1] < cds[i][1] {
+                if m <= abs[j][1] {
+                    m = abs[j][1];
+                    mj = j;
+                }
+            }
+        }
+        if m != -1 {
+            used[mj] = true;
+            cnt += 1;
+        }
+    }
+    println!("{}", cnt);
 }

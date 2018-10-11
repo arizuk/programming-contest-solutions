@@ -58,4 +58,21 @@ macro_rules! read_value {
 use std::cmp::{min, max};
 
 fn main() {
+    input!{
+        g: [[i64; 3]; 3],
+    }
+
+    let mut d = [[0; 3]; 3];
+    for i in 0..3 {
+        d[i][0] = g[i][0] - g[i][1];
+        d[i][1] = g[i][1] - g[i][2];
+        d[i][2] = g[i][2] - g[i][0];
+    }
+    if d[0][0] == d[1][0] && d[1][0] == d[2][0]
+        &&  d[0][1] == d[1][1] && d[1][1] == d[2][1]
+        &&  d[0][2] == d[1][2] && d[1][2] == d[2][2] {
+            println!("{}", "Yes");
+        } else {
+            println!("{}", "No");
+        }
 }

@@ -58,4 +58,28 @@ macro_rules! read_value {
 use std::cmp::{min, max};
 
 fn main() {
+    input!{
+      n: usize,
+      ss: [String; n],
+      m: usize,
+      ts: [String; m],
+    }
+
+    let mut max_p = 0;
+    for i in 0..n {
+        let mut p = 0i64;
+        for j in 0..n {
+            if ss[j] == ss[i] {
+                p += 1;
+            }
+        }
+
+        for j in 0..m {
+            if ts[j] == ss[i] {
+                p -= 1;
+            }
+        }
+        max_p = max(max_p, p);
+    }
+    println!("{}", max_p);
 }

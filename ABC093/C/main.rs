@@ -58,4 +58,29 @@ macro_rules! read_value {
 use std::cmp::{min, max};
 
 fn main() {
+    input!{
+      a: usize,
+      b: usize,
+      c: usize
+    }
+    let m = max(a, max(b, c));
+    let mut a = m - a;
+    let mut b = m - b;
+    let mut c = m - c;
+
+    let mut ans = 0;
+    ans += a/2;
+    ans += b/2;
+    ans += c/2;
+
+    a = a%2;
+    b = b%2;
+    c = c%2;
+    match a + b + c {
+        1 => ans += 2,
+        2 => ans += 1,
+        3 => ans += 3,
+        _ => ans += 0,
+    }
+    println!("{}", ans);
 }

@@ -58,4 +58,34 @@ macro_rules! read_value {
 use std::cmp::{min, max};
 
 fn main() {
+    input!{
+      n: usize,
+      ss: [chars; n],
+    }
+    let mut c = vec![0; 5];
+    for i in 0..n {
+        match ss[i][0] {
+            'M' => c[0] += 1,
+            'A' => c[1] += 1,
+            'R' => c[2] += 1,
+            'C' => c[3] += 1,
+            'H' => c[4] += 1,
+            _ => continue,
+        }
+    }
+
+    let uc = c.iter().filter(|&&v| v >= 1).count() as u64;
+    if uc < 3 {
+        println!("{}", 0);
+        return
+    }
+    let mut ans: u64 = 0;
+    for i in 0..5 {
+        for j in i+1..5 {
+            for k in j+1..5 {
+                ans += c[i] * c[j] * c[k];
+            }
+        }
+    }
+    println!("{}", ans);
 }

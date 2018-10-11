@@ -58,4 +58,23 @@ macro_rules! read_value {
 use std::cmp::{min, max};
 
 fn main() {
+    input!{
+      n: usize,
+      aa: [isize; n],
+    }
+    let mut aa = aa;
+    aa.insert(n, 0);
+    aa.insert(0, 0);
+
+    let mut s = 0;
+    for i in 0..n+1 {
+        s += (aa[i+1] - aa[i]).abs();
+    }
+    for i in 1..n+1 {
+        let d1 = (aa[i+1] - aa[i-1]).abs();
+        let d2 = (aa[i] - aa[i-1]).abs();
+        let d3 = (aa[i+1] - aa[i]).abs();
+        // println!("{} d1={} d2={} d3={}", s, d1, d2, d3);
+        println!("{}", s + d1 - d2 - d3);
+    }
 }
