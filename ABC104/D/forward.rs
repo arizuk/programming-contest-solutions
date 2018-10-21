@@ -72,20 +72,20 @@ fn add(a: usize, b: usize) -> usize {
 
 fn solve(s: &[char]) -> usize {
     let mut dp = vec![vec![0; 4]; s.len()+1];
-    dp[s.len()][3] = 1;
-    for i in (0..s.len()).rev() {
+    dp[0][0] = 1;
+    for i in 0..s.len() {
         for j in 0..4 {
             if s[i] == '?' {
-                dp[i][j] = add(dp[i][j], 3 * dp[i+1][j]);
+                dp[i+1][j] = add(dp[i+1][j], 3 * dp[i][j]);
             } else {
-                dp[i][j] = add(dp[i][j], dp[i+1][j]);
+                dp[i+1][j] = add(dp[i+1][j], dp[i][j]);
             }
         }
-        if s[i] == '?' || s[i] == 'A' { dp[i][0] = add(dp[i][0], dp[i+1][1]) };
-        if s[i] == '?' || s[i] == 'B' { dp[i][1] = add(dp[i][1], dp[i+1][2]) };
-        if s[i] == '?' || s[i] == 'C' { dp[i][2] = add(dp[i][2], dp[i+1][3]) };
+        if s[i] == '?' || s[i] == 'A' { dp[i+1][1] = add(dp[i+1][1], dp[i][0]) };
+        if s[i] == '?' || s[i] == 'B' { dp[i+1][2] = add(dp[i+1][2], dp[i][1]) };
+        if s[i] == '?' || s[i] == 'C' { dp[i+1][3] = add(dp[i+1][3], dp[i][2]) };
     }
-    return dp[0][0];
+    return dp[s.len()][3];
 }
 
 fn main() {

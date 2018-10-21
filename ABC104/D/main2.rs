@@ -64,44 +64,28 @@ macro_rules! debug {
 #[allow(unused_imports)]
 use std::cmp::{min, max};
 
-const MAP: [char; 4] = ['A', 'B', 'C', '-'];
+const MAP: [char; 5] = ['A', 'B', 'C', '-', '-'];
+const MOD: usize = 1000000007;
 
-fn abc(s: &[char], i: usize, c: usize) -> usize {
-    if c == 3 { return 1 };
-    if i == s.len() { return 0 };
-
-    let a1 = if s[i] == MAP[c] { abc(s, i+1, c+1) } else { 0 };
-    let a2 = abc(s, i+1, c);
-    // println!("{},{} = {},{} + {},{} = {} + {}", i, MAP[c], i+1, MAP[c+1], i+1, MAP[c], a1, a2);
-    a1 + a2
-}
-
-fn solve(s: &mut [char], i: usize) -> usize {
-    // println!("i={} s={:?}", i, s);
+fn solve(s: &[char], i: usize, c: usize) -> usize {
     if i == s.len() {
-        return abc(s, 0, 0);
+        return if c == 3 { 1 } else { 0 };
+    };
+    let mut a1 = 0;
+    if c != 3 && (s[i] == MAP[c] || s[i] == '?') {
+        a1 = solve(s, i+1, c+1);
     }
-
-    let mut ans = 0;
+    let mut a2 = solve(s, i+1, c);
     if s[i] == '?' {
-        for c in 0..3 {
-            s[i] = MAP[c];
-            ans += solve(s, i+1);
-            s[i] = '?'
-        }
-    } else {
-        ans += solve(s, i+1);
+        a2 = 3 * a2 % MOD;
     }
-    // println!("solve returns {}", ans);
-    ans
+    (a1 + a2) % MOD
 }
 
 fn main() {
     input!{
       ss: chars,
     }
-    let mut ss = ss;
-    // println!("ss={:?}", ss);
-    let ans = solve(&mut ss, 0);
+    let ans = solve(&ss, 0, 0);
     println!("{}", ans);
 }

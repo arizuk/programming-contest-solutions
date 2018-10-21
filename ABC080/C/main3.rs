@@ -64,34 +64,25 @@ macro_rules! debug {
 #[allow(unused_imports)]
 use std::cmp::{min, max};
 
-const MOD: usize = 1000000007;
-
-fn add(a: usize, b: usize) -> usize {
-    (a + b) % MOD
-}
-
-fn solve(s: &[char]) -> usize {
-    let mut dp = vec![vec![0; 4]; s.len()+1];
-    dp[s.len()][3] = 1;
-    for i in (0..s.len()).rev() {
-        for j in 0..4 {
-            if s[i] == '?' {
-                dp[i][j] = add(dp[i][j], 3 * dp[i+1][j]);
-            } else {
-                dp[i][j] = add(dp[i][j], dp[i+1][j]);
-            }
-        }
-        if s[i] == '?' || s[i] == 'A' { dp[i][0] = add(dp[i][0], dp[i+1][1]) };
-        if s[i] == '?' || s[i] == 'B' { dp[i][1] = add(dp[i][1], dp[i+1][2]) };
-        if s[i] == '?' || s[i] == 'C' { dp[i][2] = add(dp[i][2], dp[i+1][3]) };
-    }
-    return dp[0][0];
-}
-
 fn main() {
     input!{
-      ss: chars,
+      n: usize,
+      fs: [[usize; 10]; n],
+      ps: [[i64; 11]; n],
     }
-    let ans = solve(&ss);
+    let mut ans = -1 << 31;
+    for b in 1..(1 << 10) {
+        let mut p = 0;
+        for i in 0..n {
+            let mut cnt = 0;
+            for j in 0..10 {
+                if fs[i][j] == 1 && (b >> j) & 1 == 1 {
+                    cnt += 1;
+                }
+            }
+            p += ps[i][cnt];
+        }
+        ans = max(ans, p);
+    }
     println!("{}", ans);
 }
