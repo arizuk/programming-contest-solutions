@@ -1,4 +1,4 @@
-fn bs(size: usize, f: fn(usize) -> i32) -> i32  {
+fn bs(size: usize, f: &Fn(usize) -> i32) -> i32  {
   let mut s = 0;
   let mut e = size - 1;
 
@@ -16,7 +16,7 @@ fn bs(size: usize, f: fn(usize) -> i32) -> i32  {
 }
 
 fn main() {
-  let f = |i| {
+  let f = &|i| {
     if i < 5 { -1 } else { 1 }
   };
   println!("{}", bs(20, f));
