@@ -85,6 +85,7 @@ fn main() {
     let mut ans = 0;
     for i in 0..n {
         let b = bb[i];
+        // 同じ値が複数あった場合の挙動が適当..
         let lower = match aa.binary_search(&b) {
             Ok(i) => i,
             Err(i) => i,
