@@ -1,0 +1,14 @@
+[[package]]
+name = "cargo-snippet"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "snippets"
+version = "0.1.0"
+dependencies = [
+ "cargo-snippet 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[metadata]
+"checksum cargo-snippet 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)" = "71d4e1cc70d7473495a453962a1235b4f2eededa658bad5fc46de4e7ab32dca3"
