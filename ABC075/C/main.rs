@@ -63,69 +63,50 @@ macro_rules! debug {
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
-use std::cmp::Ordering;
 
-#[doc = " Equivalent to std::lowerbound and std::upperbound in c++"]
-pub trait BinarySearch<T> {
-    fn lower_bound(&self, &T) -> usize;
-    fn upper_bound(&self, &T) -> usize;
-}
-impl<T: Ord> BinarySearch<T> for [T] {
-    fn lower_bound(&self, x: &T) -> usize {
-        let mut low = 0;
-        let mut high = self.len();
-        while low != high {
-            let mid = (low + high) / 2;
-            match self[mid].cmp(x) {
-                Ordering::Less => {
-                    low = mid + 1;
-                }
-                Ordering::Equal | Ordering::Greater => {
-                    high = mid;
-                }
-            }
+fn dfs(n: usize, edges: &[[bool; 50]], visited: &mut [bool], v: usize) {
+    visited[v] = true;
+    for i in 0..n {
+        if edges[v][i] && visited[i] == false {
+            dfs(n, edges, visited, i);
         }
-        low
-    }
-    fn upper_bound(&self, x: &T) -> usize {
-        let mut low = 0;
-        let mut high = self.len();
-        while low != high {
-            let mid = (low + high) / 2;
-            match self[mid].cmp(x) {
-                Ordering::Less | Ordering::Equal => {
-                    low = mid + 1;
-                }
-                Ordering::Greater => {
-                    high = mid;
-                }
-            }
-        }
-        low
     }
 }
 
 fn main() {
     input!{
       n: usize,
-      aa: [usize; n],
-      bb: [usize; n],
-      cc: [usize; n],
+      m: usize,
+      abs: [[usize; 2]; m],
     }
-    let mut aa = aa;
-    let mut bb = bb;
-    let mut cc = cc;
-    aa.sort();
-    bb.sort();
-    cc.sort();
+
+    let mut edges = [[false; 50]; 50];
+    for i in 0..m {
+        let a = abs[i][0] - 1;
+        let b = abs[i][1] - 1;
+        edges[a][b] = true;
+        edges[b][a] = true;
+    }
 
     let mut ans = 0;
-    for i in 0..n {
-        let b = bb[i];
-        let lower = aa.lower_bound(&b);
-        let higher = cc.upper_bound(&b);
-        ans += lower * (n - higher);
-        // debug!(lower, higher, b, lower * (n - higher));
+    for i in 0..m {
+        let a = abs[i][0] - 1;
+        let b = abs[i][1] - 1;
+
+        edges[a][b] = false;
+        edges[b][a] = false;
+
+        let mut visited = vec![false; n];
+        dfs(n, &edges, &mut visited, 0);
+
+        let mut bridge = false;
+        for i in 0..n {
+            if visited[i] == false { bridge = true; }
+        }
+        if bridge { ans += 1; }
+
+        edges[a][b] = true;
+        edges[b][a] = true;
     }
     println!("{}", ans);
 }

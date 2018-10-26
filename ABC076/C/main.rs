@@ -63,69 +63,35 @@ macro_rules! debug {
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
-use std::cmp::Ordering;
-
-#[doc = " Equivalent to std::lowerbound and std::upperbound in c++"]
-pub trait BinarySearch<T> {
-    fn lower_bound(&self, &T) -> usize;
-    fn upper_bound(&self, &T) -> usize;
-}
-impl<T: Ord> BinarySearch<T> for [T] {
-    fn lower_bound(&self, x: &T) -> usize {
-        let mut low = 0;
-        let mut high = self.len();
-        while low != high {
-            let mid = (low + high) / 2;
-            match self[mid].cmp(x) {
-                Ordering::Less => {
-                    low = mid + 1;
-                }
-                Ordering::Equal | Ordering::Greater => {
-                    high = mid;
-                }
-            }
-        }
-        low
-    }
-    fn upper_bound(&self, x: &T) -> usize {
-        let mut low = 0;
-        let mut high = self.len();
-        while low != high {
-            let mid = (low + high) / 2;
-            match self[mid].cmp(x) {
-                Ordering::Less | Ordering::Equal => {
-                    low = mid + 1;
-                }
-                Ordering::Greater => {
-                    high = mid;
-                }
-            }
-        }
-        low
-    }
-}
 
 fn main() {
     input!{
-      n: usize,
-      aa: [usize; n],
-      bb: [usize; n],
-      cc: [usize; n],
+      s: chars,
+      t: chars,
     }
-    let mut aa = aa;
-    let mut bb = bb;
-    let mut cc = cc;
-    aa.sort();
-    bb.sort();
-    cc.sort();
 
-    let mut ans = 0;
-    for i in 0..n {
-        let b = bb[i];
-        let lower = aa.lower_bound(&b);
-        let higher = cc.upper_bound(&b);
-        ans += lower * (n - higher);
-        // debug!(lower, higher, b, lower * (n - higher));
+    let mut possibles: Vec<String> = vec![];
+
+    for i in 0..(s.len() - t.len() + 1) {
+        let mut ok = true;
+        let mut ss = s.clone();
+        for j in 0..t.len() {
+            if !(s[i+j] == '?' || s[i+j] == t[j]) {
+                ok = false;
+                break;
+            }
+            ss[i+j] = t[j];
+        }
+        if !ok { continue };
+        for i in 0..s.len() {
+            if ss[i] == '?' { ss[i] = 'a'; }
+        }
+        possibles.push(ss.into_iter().collect());
     }
-    println!("{}", ans);
+    possibles.sort();
+    if possibles.len() == 0 {
+        println!("{}", "UNRESTORABLE");
+    } else {
+        println!("{}", possibles[0]);
+    }
 }
