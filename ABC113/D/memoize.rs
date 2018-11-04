@@ -65,34 +65,75 @@ macro_rules! debug {
 use std::cmp::{min, max};
 const MOD : i64 = 1e9 as i64 + 7;
 
+fn path(w: usize, a: usize, b: usize) -> i64 {
+    let mut i = 0;
+    let mut cnt = 0;
+
+    while i < (1 << w-1) {
+        let mut ok = true;
+        {
+            let mut j = i;
+            let mut last = 0;
+            while j > 0 {
+                if last == 1 && j % 2 == 1 {
+                    ok = false;
+                    break;
+                }
+                last = j%2;
+                j /= 2;
+            }
+        }
+        if !ok {
+            i += 1;
+            continue;
+        }
+
+        if a == b {
+            if (1 << (a + 1 - 2)) & i > 0 {
+                i += 1;
+                continue;
+            }
+            if a >= 2 && (1 << (a - 2)) & i > 0 {
+                i += 1;
+                continue;
+            }
+            cnt += 1;
+        } else {
+            if (1 << (b - 2)) & i > 0 {
+                cnt += 1;
+            }
+        }
+        i += 1;
+    }
+    cnt
+}
+
+fn solve(h: usize, w: usize, k: usize, hi: usize, wi: usize, dp: &mut Vec<Vec<i64>>) -> i64 {
+    if dp[hi][wi] != -1 {
+        return dp[hi][wi];
+    }
+    assert!(wi >= 1 && wi <= w);
+    let mut ans = solve(h, w, k, hi+1, wi, dp) * path(w, wi, wi) % MOD;
+    if wi > 1 {
+        ans = (ans + solve(h, w, k, hi+1, wi - 1, dp) * path(w, wi-1, wi)) % MOD;
+    };
+    if wi < w {
+        ans = (ans + solve(h, w, k, hi+1, wi + 1, dp) * path(w, wi, wi+1)) % MOD;
+    };
+    dp[hi][wi] = ans % MOD;
+    return ans % MOD;
+}
+
 fn main() {
     input!{
       h: usize,
       w: usize,
       k: usize,
     }
-    let mut dp = vec![vec![0; w+1]; h+1];
-    dp[0][1] = 1;
-    for hi in 0..h {
-        for wi in 1..w+1 {
-            if dp[hi][wi] == 0 { continue; }
-            for bit in 0..(1 << w - 1) {
-                let mut ok = true;
-                for i in 0..w as i64 -2 {
-                    if bit >> i & 1 == 1 && bit >> i+1 & 1 == 1 { ok = false };
-                }
-                if ok {
-                    // println!("{:03b}", bit);
-                    if wi < w && 1 << ((wi - 1)) & bit > 0 {
-                        dp[hi+1][wi+1] = (dp[hi+1][wi+1] + dp[hi][wi]) % MOD;
-                    } else if wi > 1 && (1 << (wi - 2)) & bit > 0 {
-                        dp[hi+1][wi-1] = (dp[hi+1][wi-1] + dp[hi][wi]) % MOD;
-                    } else {
-                        dp[hi+1][wi] = (dp[hi+1][wi] + dp[hi][wi]) % MOD;
-                    }
-                }
-            }
-        }
+    let mut dp = vec![vec![-1; w+1]; h+2];
+    for i in 0..w+1 {
+        dp[h+1][i] = 0;
     }
-    println!("{}", dp[h][k]);
+    dp[h+1][k] = 1;
+    println!("{}", solve(h, w, k, 1, 1, &mut dp));
 }
