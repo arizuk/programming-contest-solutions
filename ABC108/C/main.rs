@@ -59,36 +59,9 @@ fn main() {
         n: i32,
         k: i32,
     }
-
-    let mut ans = 0;
-    for a in 1..(n + 1) {
-        for i in (a / k)..(n + 1) {
-            let bc = i * k - a;
-            if bc > n {
-                break;
-            };
-            if bc <= 0 {
-                continue;
-            };
-
-            for b in 1..(bc - 1) {
-                let c = bc - b;
-                if (b + a) % k == 0 && (c + a) % k == 0 {
-                    ans += 1;
-                }
-            }
-
-            // for j in (b/k)..(n+1) {
-            //     let c = j * k - b;
-            //     if c > n { break };
-            //     if c <= 0 { continue };
-
-            //     if (a + c) % k == 0 {
-            //         // println!("{} {} {}", a, b, c);
-            //         ans += 1;
-            //     }
-            // }
-        }
+    if k % 2 == 1 {
+        println!("{}", (n/k).pow(3));
+    } else {
+        println!("{}", (n/k).pow(3) + ((n + k/2)/k).pow(3));
     }
-    println!("{}", ans);
 }
