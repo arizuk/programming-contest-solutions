@@ -6,3 +6,4 @@
 extern crate test;
 
 pub mod binary_search;
+pub mod gcd;
