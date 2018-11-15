@@ -63,7 +63,6 @@ macro_rules! debug {
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
-use std::collections::VecDeque;
 
 fn main() {
     input!{
@@ -71,17 +70,23 @@ fn main() {
         aa: [usize; n],
     }
 
-    let mut q = VecDeque::new();
+    let mut ans = vec![0; n];
+    let mut idx: i64 = n as i64 -1;
+    let mut d: i64 = -2;
     for i in 0..n {
-        if i % 2 == 0 {
-            q.push_back(aa[i]);
-        } else {
-            q.push_front(aa[i]);
+        // debug!(idx);
+        ans[i] = aa[idx as usize];
+        idx += d;
+        if idx < 0 {
+            d = 2;
+            idx = if idx == -1 { 0 } else { 1 }
         }
     }
-    if n%2 == 1 {
-        println!("{}", q.iter().rev().map(|v| v.to_string()).collect::<Vec<_>>().join(" "));
-    } else {
-        println!("{}", q.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(" "));
+    for i in 0..n {
+        if i != n-1 {
+            print!("{} ", ans[i]);
+        } else {
+            println!("{}", ans[i]);
+        }
     }
 }
