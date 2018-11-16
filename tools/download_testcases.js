@@ -1,6 +1,9 @@
 const request = require('request')
 const path = require('path')
 const fs = require('fs')
+const cheerio = require('cheerio')
+const { parseBodyAndSaveTestcases } = require('./src/testcase')
+const { restoreCookieJar } = require('./src/login')
 
 const getUrl = () => {
   if (process.argv.length > 2) {
@@ -13,43 +16,23 @@ const getUrl = () => {
   }
 }
 
-const parseBody = body => {
-  const $ = cheerio.load(body)
-  $('#task-statement .part').each(function(i, e) {
-    const title = $(this).find('h3').text()
-    const match = title.match(/Sample\s+(Input|Output)\s+(\d+)/i)
-    if (!match) return
-
-    const type = match[1].toLowerCase()
-    const number = match[2]
-    const content = $(this).find('pre').text().trim() + "\n"
-    const filename = `${type}${number}`
-    console.log(`Write ${filename}`);
-    fs.writeFileSync(filename, content, function (err) {
-      if (err) {
-          throw err;
-      }
-    });
-  })
-}
-
 const handleUrl = url => {
   console.log(`Download testcases from ${url}.`)
-  request(url, (error, response, body) => {
+  const jar = restoreCookieJar()
+  request.get({ url, jar }, (error, response, body) => {
     if (error) {
       console.log(error)
     } else {
-      parseBody(body)
+      parseBodyAndSaveTestcases(body)
     }
   })
 }
 
 const handleLocalFile = path => {
   const body = fs.readFileSync(path, 'utf8')
-  parseBody(body)
+  parseBodyAndSaveTestcases(body)
 }
 
-const cheerio = require('cheerio')
 const url = getUrl()
 
 if (url.match(/^http/)) {
