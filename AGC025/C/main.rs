@@ -70,14 +70,14 @@ fn main() {
     }
     let mut ans = 1 << 10;
 
-    fn dsum(mut a: usize) -> usize {
-        let mut ans = 0;
+    let dsum = |mut a| {
+        let mut ret = 0;
         while a > 0 {
-            ans += a%10;
+            ret += a % 10;
             a /= 10;
         }
-        ans
-    }
+        ret
+    };
 
     for a in 1..n {
         let b = n - a;
