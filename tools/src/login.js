@@ -7,9 +7,7 @@ const { CookieJar } = require('tough-cookie')
 const url = "https://beta.atcoder.jp/login"
 const cookieStorePath = path.join(process.env.HOME, ".atcoder.json")
 
-const jar = request.jar()
-
-const setCookies = (response) => {
+const setCookies = (jar, response) => {
   const cookies = response.headers['set-cookie'] || []
   cookies.forEach(cookieString => {
     const cookie = request.cookie(cookieString)
@@ -24,15 +22,16 @@ const parseCsrfToken = (body) => {
 
 const getLoginPage = () => {
   return new Promise((resolve, reject) => {
-    request.get(url, (error, response, body) =>  {
-      setCookies(response)
-      resolve({ error, response, body })
-    })
+    request.get(url, (error, response, body) => resolve({ error, response, body }))
   })
 }
 
 const login = async () => {
-  const { error, body } = await getLoginPage()
+  const jar = request.jar()
+
+  const { error, body, response } = await getLoginPage()
+
+  setCookies(jar, response)
   const csrfToken = parseCsrfToken(body)
 
   const formData = {
@@ -43,7 +42,7 @@ const login = async () => {
 
   request.post({ url, jar, formData }, (error, response, body) => {
     if (response.statusCode == 302 && response.headers.location === '/') {
-      setCookies(response)
+      setCookies(jar, response)
       console.log(`Login atcoder successfully`);
       const json = JSON.stringify(jar._jar.toJSON());
       fs.writeFileSync(cookieStorePath, json, (err) => {
