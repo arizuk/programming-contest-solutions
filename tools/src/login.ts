@@ -25,12 +25,12 @@ export function restoreCookieJar(): CookieJar {
   return jar
 }
 
-interface LoginCredential {
+interface LoginCredentials {
   username: string
   password: string,
 }
 
-function getLoginCredential(): LoginCredential {
+function getLoginCredentials(): LoginCredentials {
   const username = process.env.ATCODER_USER
   const password = process.env.ATCODER_PASSWORD
 
@@ -57,7 +57,7 @@ export async function login(loginUrl: string) {
   const csrfToken = parseCsrfToken(res.body)
   const formBody = {
     csrf_token: csrfToken,
-    ...getLoginCredential()
+    ...getLoginCredentials()
   }
 
   // XXX. Following code dit not work..
