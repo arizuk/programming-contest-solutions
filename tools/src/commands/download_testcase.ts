@@ -16,7 +16,7 @@ async function handleUrl(url: string) {
   if (res.statusCode == 200) {
     parseBodyAndSaveTestcases(res.body)
   } else {
-    throw new Error(`Error! status code=${res.statusCode}`)
+    throw new Error(`The server returns ${res.statusCode}`)
   }
 }
 

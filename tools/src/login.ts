@@ -25,19 +25,39 @@ export function restoreCookieJar(): CookieJar {
   return jar
 }
 
+interface LoginCredential {
+  username: string
+  password: string,
+}
+
+function getLoginCredential(): LoginCredential {
+  const username = process.env.ATCODER_USER
+  const password = process.env.ATCODER_PASSWORD
+
+  if (!username || !password) {
+    const message = `
+    Couldn't read credential!
+
+    You must set ATCODER_USER and ATCODER_PASSWORD environment variables.
+    `
+    throw new Error(message)
+  }
+
+  return { username, password }
+}
+
 export async function login(loginUrl: string) {
   const cookieJar = new CookieJar()
 
   const res = await got.get(loginUrl, { cookieJar })
   if (res.statusCode != 200) {
-    throw new Error(`Error! The server returns ${res.statusCode}`)
+    throw new Error(`The server returns ${res.statusCode}`)
   }
 
   const csrfToken = parseCsrfToken(res.body)
   const formBody = {
-    username: process.env.ATCODER_USER,
-    password: process.env.ATCODER_PASSWORD,
-    csrf_token: csrfToken
+    csrf_token: csrfToken,
+    ...getLoginCredential()
   }
 
   // XXX. Following code dit not work..
@@ -53,7 +73,7 @@ export async function login(loginUrl: string) {
       console.log('Login success!')
       saveSession(cookieJar, loginUrl)
     } else {
-      console.log(`Error! Login failed! body=${JSON.stringify(formBody)}`)
+      throw new Error(`Login failed! body=${JSON.stringify(formBody)}`)
     }
   })
 }
