@@ -21,10 +21,10 @@ async function handleUrl(url: string) {
 }
 
 export default class Login extends Command {
-  static description = 'login to atcoder.jp'
+  static description = 'Parse and save testcases from given problem resource'
 
   static examples = [
-    `$ atcoder download_testcase https://beta.atcoder.jp/contests/agc020/tasks/agc020_a`
+    `$ atcoder download_testcases https://beta.atcoder.jp/contests/agc020/tasks/agc020_a`
   ]
 
   static args = [
