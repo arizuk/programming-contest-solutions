@@ -62,47 +62,29 @@ macro_rules! debug {
 }
 
 #[allow(unused_imports)]
-use std::cmp::{max, min};
+use std::cmp::{min, max};
+
+fn solve(n: usize) -> usize {
+    if n == 0 { return 0; }
+    if n < 10 { return 1; }
+
+    let mut d = 1;
+    while d*10<=n { d *= 10 };
+
+    let mut ans = 0;
+    if n/d == 1 {
+        ans += n%d + 1;
+    } else {
+        ans += d;
+    }
+    ans += (n/d) * solve(d-1);
+    ans += solve(n%d);
+    ans
+}
 
 fn main() {
     input!{
       n: usize,
-      s: chars,
-      q: usize,
-      ks: [usize; q],
     }
-
-    let solve = |k| {
-        let mut ans = 0usize;
-        let mut d = 0usize;
-        let mut m = 0usize;
-        let mut dm = 0usize;
-
-        for i in 0..n {
-            if s[i] == 'D' {
-                d += 1
-            }
-            if s[i] == 'M' {
-                m += 1;
-                dm += d;
-            }
-            if i >= k {
-                if s[i-k] == 'D' {
-                    d -= 1;
-                    dm -= m;
-                }
-                if s[i-k] == 'M' {
-                    m -= 1;
-                }
-            }
-
-            if s[i] == 'C' {
-                ans += dm;
-            }
-        }
-        ans
-    };
-    for k in ks {
-        println!("{}", solve(k));
-    }
+    println!("{}", solve(n));
 }

@@ -62,47 +62,25 @@ macro_rules! debug {
 }
 
 #[allow(unused_imports)]
-use std::cmp::{max, min};
+use std::cmp::{min, max};
+
+
+fn abc(i: usize, s: &mut Vec<char>, n: usize) {
+    for &c in ['a', 'b', 'c'].iter() {
+        s[i] = c;
+        if i == n-1 {
+            println!("{}", s.iter().map(|&v| v).collect::<String>());
+        } else {
+            abc(i+1, s, n);
+       }
+    }
+}
+
 
 fn main() {
     input!{
       n: usize,
-      s: chars,
-      q: usize,
-      ks: [usize; q],
     }
-
-    let solve = |k| {
-        let mut ans = 0usize;
-        let mut d = 0usize;
-        let mut m = 0usize;
-        let mut dm = 0usize;
-
-        for i in 0..n {
-            if s[i] == 'D' {
-                d += 1
-            }
-            if s[i] == 'M' {
-                m += 1;
-                dm += d;
-            }
-            if i >= k {
-                if s[i-k] == 'D' {
-                    d -= 1;
-                    dm -= m;
-                }
-                if s[i-k] == 'M' {
-                    m -= 1;
-                }
-            }
-
-            if s[i] == 'C' {
-                ans += dm;
-            }
-        }
-        ans
-    };
-    for k in ks {
-        println!("{}", solve(k));
-    }
+    let mut s = vec!['a'; n];
+    abc(0, &mut s, n);
 }

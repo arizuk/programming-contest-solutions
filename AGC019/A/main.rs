@@ -62,47 +62,19 @@ macro_rules! debug {
 }
 
 #[allow(unused_imports)]
-use std::cmp::{max, min};
+use std::cmp::{min, max};
 
 fn main() {
     input!{
-      n: usize,
-      s: chars,
       q: usize,
-      ks: [usize; q],
+      h: usize,
+      s: usize,
+      d: usize,
+      n: usize,
     }
 
-    let solve = |k| {
-        let mut ans = 0usize;
-        let mut d = 0usize;
-        let mut m = 0usize;
-        let mut dm = 0usize;
-
-        for i in 0..n {
-            if s[i] == 'D' {
-                d += 1
-            }
-            if s[i] == 'M' {
-                m += 1;
-                dm += d;
-            }
-            if i >= k {
-                if s[i-k] == 'D' {
-                    d -= 1;
-                    dm -= m;
-                }
-                if s[i-k] == 'M' {
-                    m -= 1;
-                }
-            }
-
-            if s[i] == 'C' {
-                ans += dm;
-            }
-        }
-        ans
-    };
-    for k in ks {
-        println!("{}", solve(k));
-    }
+    let m = min(q*4, min(h*2, s));
+    let mut ans = n*m;
+    ans = min(ans, n/2*d + n%2 * m);
+    println!("{}", ans);
 }
