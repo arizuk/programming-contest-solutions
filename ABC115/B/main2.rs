@@ -69,7 +69,11 @@ fn main() {
       n: usize,
       ps: [usize; n],
     }
-    let mut ps = ps;
-    ps.sort();
-    println!("{}", ps.iter().sum::<usize>() - ps.last().unwrap()/2);
+    let mut max_v = ps[0];
+    let mut ans = 0;
+    for p in ps {
+        max_v = max(max_v, p);
+        ans += p;
+    }
+    println!("{}", ans - max_v/2);
 }

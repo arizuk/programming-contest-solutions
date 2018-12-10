@@ -67,9 +67,15 @@ use std::cmp::{min, max};
 fn main() {
     input!{
       n: usize,
-      ps: [usize; n],
+      k: usize,
+      hs: [usize; n]
     }
-    let mut ps = ps;
-    ps.sort();
-    println!("{}", ps.iter().sum::<usize>() - ps.last().unwrap()/2);
+    let mut hs = hs;
+    hs.sort();
+    let mut ans = hs[n-1] - hs[0];
+    for i in (k-1)..n {
+        let h = hs[i] - hs[i+1-k];
+        ans = min(h, ans);
+    }
+    println!("{}", ans);
 }

@@ -72,20 +72,11 @@ fn solve(ls: &Vec<usize>, ps: &Vec<usize>, x: usize, lv: usize) -> usize {
         return 0;
     }
 
-    if x >= ls[lv] {
-        return ps[lv];
+    if x <= ls[lv-1] + 1 {
+        solve(ls, ps, x-1, lv-1)
+    } else {
+        1 + solve(ls, ps, x-ls[lv-1]-2, lv-1) + ps[lv-1]
     }
-
-    let mut x1 = x-1;
-    let mut ans = solve(ls, ps, x1, lv-1);
-    let x2 = ls[lv-1] + 1;
-    if x2 >= x {
-        return ans;
-    }
-    ans += 1;
-    x1 = x - (ls[lv-1] + 2);
-    ans += solve(ls, ps, x1, lv-1);
-    ans
 }
 
 fn main() {

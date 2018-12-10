@@ -72,10 +72,6 @@ fn main() {
     }
     let mut hs = hs;
     hs.sort();
-    let mut ans = hs[n-1] - hs[0];
-    for i in (k-1)..n {
-        let h = hs[i] - hs[i+1-k];
-        ans = min(h, ans);
-    }
+    let ans = hs.windows(k).map(|w| w.last().unwrap() - w.first().unwrap()).min().unwrap();
     println!("{}", ans);
 }
