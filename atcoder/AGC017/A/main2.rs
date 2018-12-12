@@ -64,24 +64,43 @@ macro_rules! debug {
 #[allow(unused_imports)]
 use std::cmp::{min, max};
 
+fn combi(n: u64, mut k: u64) -> u64 {
+    assert!(n >= k);
+    k = min(n-k, k);
+    let mut ans = 1;
+    for d in 1..k+1 {
+        ans *= n+1-d;
+        ans /= d;
+    }
+    ans
+}
+
 fn main() {
     input!{
       n: usize,
-      p: usize,
+      p: u64,
       aa: [u64; n]
     }
 
-    let mut dp = vec![vec![0u64;2]; n+1];
+    let mut even = 0u64;
+    let mut odd = 0u64;
 
-    dp[0][0] = 1;
-    for i in 0..n {
-        if aa[i] % 2 == 0 {
-            dp[i+1][0] = dp[i][0]*2;
-            dp[i+1][1] = dp[i][1]*2;
+    for a in aa {
+        if a%2 == 0 {
+            even += 1;
         } else {
-            dp[i+1][0] = dp[i][1] + dp[i][0];
-            dp[i+1][1] = dp[i][0] + dp[i][1];
+            odd += 1;
         }
     }
-    println!("{}", dp[n][p]);
+
+    let mut ans = 0;
+    for e in 0..even+1 {
+        for o in 0..odd+1 {
+            if o%2 != p {
+                continue;
+            }
+            ans += combi(even, e as u64) * combi(odd, o as u64)
+        }
+    }
+    println!("{}", ans);
 }
