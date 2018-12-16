@@ -77,33 +77,34 @@ fn main() {
     let mut aa = aa;
     aa.sort();
 
-    let mut map: HashMap<usize, usize> = HashMap::new();
+    let mut map: HashMap<usize, Vec<usize>> = HashMap::new();
 
+    let mut used = vec![false; n];
     let mut ans = 0;
 
     for i in 0..n {
         let a = aa[i];
-        let e = map.entry(a).or_insert(0);
-        *e += 1;
+        let e = map.entry(a).or_insert(vec![]);
+        e.push(i);
     }
 
     for r in (0..n).rev() {
-        let a = aa[r];
-        if let Some(v) = map.get_mut(&a) {
-            if *v == 0 {
-                continue;
-            }
-            *v -= 1;
+        if used[r] {
+            continue;
         }
-
+        let a = aa[r];
         let mut t = 2;
         while t <= a { t *= 2; }
         // debug!(a, t);
 
-        if let Some(v) = map.get_mut(&(t-a)) {
-            if *v > 0 {
-                *v -= 1;
-                ans += 1;
+        if let Some(vs) = map.get_mut(&(t-a)) {
+            while let Some(v) = vs.pop() {
+                if v != r && !used[v] {
+                    used[v] = true;
+                    used[r] = true;
+                    ans += 1;
+                    break;
+                }
             }
         }
     }
