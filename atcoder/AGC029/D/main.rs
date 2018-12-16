@@ -57,56 +57,86 @@ macro_rules! read_value {
 #[allow(unused_macros)]
 macro_rules! debug {
     ($($a:expr),*) => {
-        #[cfg(debug_assertions)]
-        writeln!(&mut std::io::stderr(), concat!("[DEBUG] ", $(stringify!($a), "={:?} "),*), $($a),*);
+        println!(concat!($(stringify!($a), "={:?} "),*), $($a),*);
     }
 }
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
-#[allow(unused_imports)]
-use std::io::Write;
-use std::collections::HashMap;
 
+use std::cmp::Ordering;
 
-fn main() {
-    input!{
-      n: usize,
-      aa: [usize; n],
-    }
-    let mut aa = aa;
-    aa.sort();
-
-    let mut map: HashMap<usize, Vec<usize>> = HashMap::new();
-
-    let mut used = vec![false; n];
-    let mut ans = 0;
-
-    for i in 0..n {
-        let a = aa[i];
-        let e = map.entry(a).or_insert(vec![]);
-        e.push(i);
-    }
-
-    for r in (0..n).rev() {
-        if used[r] {
-            continue;
-        }
-        let a = aa[r];
-        let mut t = 2;
-        while t <= a { t *= 2; }
-        // debug!(a, t);
-
-        if let Some(vs) = map.get_mut(&(t-a)) {
-            while let Some(v) = vs.pop() {
-                if v != r && !used[v] {
-                    used[v] = true;
-                    used[r] = true;
-                    ans += 1;
-                    break;
+#[doc = " Equivalent to std::lowerbound and std::upperbound in c++"]
+pub trait BinarySearch<T> {
+    fn lower_bound(&self, &T) -> usize;
+    fn upper_bound(&self, &T) -> usize;
+}
+impl<T: Ord> BinarySearch<T> for [T] {
+    fn lower_bound(&self, x: &T) -> usize {
+        let mut low = 0;
+        let mut high = self.len();
+        while low != high {
+            let mid = (low + high) / 2;
+            match self[mid].cmp(x) {
+                Ordering::Less => {
+                    low = mid + 1;
+                }
+                Ordering::Equal | Ordering::Greater => {
+                    high = mid;
                 }
             }
         }
+        low
     }
-    println!("{}", ans);
+    fn upper_bound(&self, x: &T) -> usize {
+        let mut low = 0;
+        let mut high = self.len();
+        while low != high {
+            let mid = (low + high) / 2;
+            match self[mid].cmp(x) {
+                Ordering::Less | Ordering::Equal => {
+                    low = mid + 1;
+                }
+                Ordering::Greater => {
+                    high = mid;
+                }
+            }
+        }
+        low
+    }
+}
+
+fn main() {
+    input!{
+      h: usize,
+      _w: usize,
+      n: usize,
+      xys: [[usize; 2]; n],
+    }
+
+    let mut bs = vec![vec![]; h];
+    for i in 0..n {
+        let x = xys[i][0];
+        let y = xys[i][1];
+        bs[x-1].push(y-1);
+    }
+    let mut r = 0;
+    for i in 1..h {
+        bs[i].sort();
+        let bs = &bs[i];
+        if bs.len() == 0 {
+            r += 1;
+            continue;
+        }
+        if bs[0] <= r {
+            // debug!(i, r, bs[0]);
+            println!("{}", i);
+            return;
+        }
+
+        if bs[0] > r+1 {
+            r += 1;
+        }
+    }
+    println!("{}", h);
 }

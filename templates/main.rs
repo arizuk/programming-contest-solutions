@@ -57,12 +57,16 @@ macro_rules! read_value {
 #[allow(unused_macros)]
 macro_rules! debug {
     ($($a:expr),*) => {
-        println!(concat!($(stringify!($a), "={:?} "),*), $($a),*);
+        #[cfg(debug_assertions)]
+        writeln!(&mut std::io::stderr(), concat!($(stringify!($a), "={:?} "),*), $($a),*);
     }
 }
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
+
+#[allow(unused_imports)]
+use std::io::Write;
 
 fn main() {
 }
