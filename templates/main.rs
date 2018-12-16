@@ -58,7 +58,7 @@ macro_rules! read_value {
 macro_rules! debug {
     ($($a:expr),*) => {
         #[cfg(debug_assertions)]
-        writeln!(&mut std::io::stderr(), concat!($(stringify!($a), "={:?} "),*), $($a),*);
+        writeln!(&mut std::io::stderr(), concat!("[DEBUG] ", $(stringify!($a), "={:?} "),*), $($a),*);
     }
 }
 
