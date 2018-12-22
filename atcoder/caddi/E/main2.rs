@@ -68,11 +68,34 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
+fn f(a: usize, b: usize) -> (u32, u32) {
+    if a <= b {
+        let mut p = 0;
+        while a*4usize.pow(p+1) <= b {
+            p += 1;
+        }
+        (p, 0)
+    } else {
+        let mut p = 0;
+        while a > b*4usize.pow(p) {
+            p += 1;
+        }
+        (0, p)
+    }
+}
+
 fn main() {
     input!{
       n: usize,
-      aa: [u64; n],
+      aa: [usize; n],
     }
+
+    // for &a in [2, 3, 10].iter() {
+    //     for b in 1..20 {
+    //         let (p1, p2) = f(a, b);
+    //         println!("{},{} => {},{}", a, b, a*4usize.pow(p1), b*4usize.pow(p2));
+    //     }
+    // }
 
     // +
     let mut dp = vec![vec![0; 16]; n];
@@ -81,19 +104,18 @@ fn main() {
     }
     for i in (0..n-1).rev() {
         for p in 0..16 {
-            let a1 = aa[i]*4u64.pow(p as u32);
-            let mut a2 = aa[i+1];
-            let mut x = 0;
-            while a2 < a1 {
-                x += 1;
-                a2 *= 4;
+            let a1 = aa[i];
+            let a2 = aa[i+1];
+            let (p1, p2) = f(a1, a2);
+            let mut x = p2;
+            if p > p1 {
+                x += p - p1;
             }
-            let p = p as usize;
-            let x = x as usize;
             if x < 16 {
-                dp[i][p] = dp[i+1][x] + p;
+                dp[i][p as usize] = dp[i+1][x as usize] + p as usize;
+                // debug!(a1, a2, p1, p2, i, p, i+1, x);
             } else {
-                dp[i][p] = dp[i+1][15] + p + (x - 15) * (n-i-1);
+                dp[i][p as usize] = dp[i+1][15] + p as usize + ((x as usize -15) * (n-i-1)) as usize;
             }
         }
     }
@@ -101,25 +123,28 @@ fn main() {
     // -
     let mut aa = aa;
     aa.reverse();
+    for i in 0..n {
+        aa[i] = aa[i] * 2;
+    }
+
     let mut dp2 = vec![vec![0; 16]; n];
     for i in 0..16 {
         dp2[n-1][i] = i;
     }
     for i in (0..n-1).rev() {
         for p in 0..16 {
-            let a1 = aa[i]*4u64.pow(p as u32);
-            let mut a2 = aa[i+1];
-            let mut x = 0;
-            while a2 < a1 {
-                x += 1;
-                a2 *= 4;
+            let a1 = aa[i];
+            let a2 = aa[i+1];
+            let (p1, p2) = f(a1, a2);
+            let mut x = p2;
+            if p > p1 {
+                x += p - p1;
             }
-            let p = p as usize;
-            let x = x as usize;
             if x < 16 {
-                dp2[i][p] = dp2[i+1][x] + p;
+                dp2[i][p as usize] = dp2[i+1][x as usize] + p as usize;
+                // println!("dp[{}][{}] => dp[{}][{}] p1={} p2={}", i, p, i+1, x, p1, p2);
             } else {
-                dp2[i][p] = dp2[i+1][15] + p + (x - 15) * (n-i-1);
+                dp2[i][p as usize] = dp2[i+1][15] + p as usize + ((x as usize -15) * (n-i-1)) as usize;
             }
         }
     }
