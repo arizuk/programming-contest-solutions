@@ -68,14 +68,8 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-fn main() {
-    input!{
-      n: usize,
-      aa: [u64; n],
-    }
-
-    // +
-    let mut dp = vec![vec![0; 16]; n];
+fn count(aa: &Vec<u64>, n: usize) -> Vec<Vec<usize>> {
+    let mut dp = vec![vec![0; 16]; n+1];
     for i in 0..16 {
         dp[n-1][i] = i;
     }
@@ -97,35 +91,22 @@ fn main() {
             }
         }
     }
+    dp
+}
 
-    // -
+fn main() {
+    input!{
+      n: usize,
+      aa: [u64; n],
+    }
+
+    let dp = count(&aa, n);
     let mut aa = aa;
     aa.reverse();
-    let mut dp2 = vec![vec![0; 16]; n];
-    for i in 0..16 {
-        dp2[n-1][i] = i;
-    }
-    for i in (0..n-1).rev() {
-        for p in 0..16 {
-            let a1 = aa[i]*4u64.pow(p as u32);
-            let mut a2 = aa[i+1];
-            let mut x = 0;
-            while a2 < a1 {
-                x += 1;
-                a2 *= 4;
-            }
-            let p = p as usize;
-            let x = x as usize;
-            if x < 16 {
-                dp2[i][p] = dp2[i+1][x] + p;
-            } else {
-                dp2[i][p] = dp2[i+1][15] + p + (x - 15) * (n-i-1);
-            }
-        }
-    }
+    let dp2 = count(&aa, n);
 
-    let mut ans = min(dp[0][0] * 2, n + dp2[0][0]*2);
-    for i in 1..n {
+    let mut ans: usize = 1 << 60;
+    for i in 0..n+1 {
         let c1 = dp[i][0] * 2;
         let c2 = dp2[n-i][0] * 2 + i;
         ans = min(c1+c2, ans);
