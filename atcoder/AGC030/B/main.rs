@@ -74,11 +74,54 @@ fn main() {
       n: usize,
       xs: [usize; n],
     }
-
-    let mut up = vec![0; n];
-    let mut down = vec![0; n];
+    let mut xs = xs;
+    let mut sx = vec![0; n+1];
+    let mut sy = vec![0; n+1];
+    let mut ys: Vec<usize> = xs.iter().map(|v| l - *v).collect();
+    ys.reverse();
 
     for i in 0..n {
-        up[i] = up[i-1]
+        sx[i+1] = sx[i] + xs[i];
+        sy[i+1] = sy[i] + ys[i];
     }
+    // debug!(sx, sy);
+
+    let mut ans = 0;
+    for i in 0..n {
+        let mut d = 0;
+        let nx = (n-i-1)/2;
+        let ny = (n-i)/2;
+
+        d += sx[i+1+nx] - sx[i];
+        d += sy[ny];
+        d *= 2;
+
+        if (n-i-1)%2==0 {
+            d -= xs[i+nx];
+        } else {
+            d -= ys[ny-1];
+        }
+        ans = max(ans, d);
+    }
+
+    std::mem::swap(&mut xs, &mut ys);
+    std::mem::swap(&mut sx, &mut sy);
+
+    for i in 0..n {
+        let mut d = 0;
+        let nx = (n-i-1)/2;
+        let ny = (n-i)/2;
+
+        d += sx[i+1+nx] - sx[i];
+        d += sy[ny];
+        d *= 2;
+
+        if (n-i-1)%2==0 {
+            d -= xs[i+nx];
+        } else {
+            d -= ys[ny-1];
+        }
+        ans = max(ans, d);
+    }
+    println!("{}", ans);
 }
