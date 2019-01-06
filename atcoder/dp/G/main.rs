@@ -67,47 +67,36 @@ use std::cmp::{min, max};
 
 #[allow(unused_imports)]
 use std::io::Write;
-
-fn print_lcs(a: &Vec<char>, b: &Vec<char>, lcs: &Vec<Vec<usize>>, i: usize, j: usize) {
-    if i == 0 || j == 0 {
-        return;
-    }
-    if a[i-1] == b[j-1] {
-        print_lcs(a, b, lcs, i-1, j-1);
-        print!("{}", a[i-1]);
-    } else {
-        if lcs[i-1][j] >= lcs[i][j-1] {
-            print_lcs(a, b, lcs, i-1, j);
-        } else {
-            print_lcs(a, b, lcs, i, j-1);
-        }
-    }
-}
-
-fn solve() {
-    input!{
-      s: chars,
-      t: chars,
-    }
-
-    let n = s.len();
-    let m = t.len();
-    let mut dp = vec![vec![0; m+1]; n+1];
-
-    for i in 0..n {
-        for j in 0..m {
-            if s[i] == t[j] {
-                dp[i+1][j+1] = dp[i][j] + 1;
-            } else {
-                dp[i+1][j+1] = max(dp[i][j+1], dp[i+1][j]);
-            }
-        }
-    }
-    print_lcs(&s, &t, &dp, n, m);
-}
+use std::collections::VecDeque;
 
 fn main() {
-    let stack_size = 104_857_600; // 100 MB
-    let thd = std::thread::Builder::new().stack_size(stack_size);
-    thd.spawn(|| solve()).unwrap().join().unwrap();
+    input!{
+      n: usize,
+      m: usize,
+      xys: [(usize, usize); m],
+    }
+    let mut edges = vec![vec![]; n];
+    let mut cnt = vec![0; n];
+    for &(x, y) in xys.iter() {
+        edges[y-1].push(x-1);
+        cnt[x-1] += 1;
+    }
+
+    let mut q = VecDeque::new();
+    for i in 0..n {
+        if cnt[i] == 0 {
+            q.push_back(i);
+        }
+    }
+
+    let mut dp = vec![0; n];
+    while let Some(node) = q.pop_front() {
+        // debug!(node);
+        for &edge in edges[node].iter() {
+            // debug!(node, edge);
+            dp[edge] = max(dp[edge], dp[node] + 1);
+            q.push_back(edge);
+        }
+    }
+    println!("{}", dp.iter().max().unwrap());
 }

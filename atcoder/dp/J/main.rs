@@ -68,46 +68,45 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-fn print_lcs(a: &Vec<char>, b: &Vec<char>, lcs: &Vec<Vec<usize>>, i: usize, j: usize) {
-    if i == 0 || j == 0 {
-        return;
-    }
-    if a[i-1] == b[j-1] {
-        print_lcs(a, b, lcs, i-1, j-1);
-        print!("{}", a[i-1]);
-    } else {
-        if lcs[i-1][j] >= lcs[i][j-1] {
-            print_lcs(a, b, lcs, i-1, j);
-        } else {
-            print_lcs(a, b, lcs, i, j-1);
-        }
-    }
-}
-
-fn solve() {
+fn main() {
     input!{
-      s: chars,
-      t: chars,
+      n: usize,
+      aa: [usize; n],
     }
 
-    let n = s.len();
-    let m = t.len();
-    let mut dp = vec![vec![0; m+1]; n+1];
-
+    let mut xx = 0;
+    let mut yy = 0;
+    let mut zz = 0;
     for i in 0..n {
-        for j in 0..m {
-            if s[i] == t[j] {
-                dp[i+1][j+1] = dp[i][j] + 1;
-            } else {
-                dp[i+1][j+1] = max(dp[i][j+1], dp[i+1][j]);
+        if aa[i] == 1 { xx += 1; }
+        if aa[i] == 2 { yy += 1; }
+        if aa[i] == 3 { zz += 1; }
+    }
+    let mut dp = vec![vec![vec![-1.0; n+1]; n+1]; n+1];
+    dp[xx][yy][zz] = 0.0;
+
+    for x in (0..n+1).rev() {
+        for y in (0..n+1).rev() {
+            for z in (0..zz+1).rev() {
+                if x + y + z > n {
+                    break;
+                }
+                debug!(x, y, z);
+                if dp[x][y][z] != -1.0 {
+                    debug!(x, y, z, dp[x][y][z]);
+                    if z > 0 {
+                        dp[x][y+1][z-1] = dp[x][y][z] + n as f64/(z as f64);
+                        debug!(x, y+1, z-1, dp[x][y+1][z-1]);
+                    }
+                    if y > 0 {
+                        dp[x+1][y-1][z] = dp[x][y][z] + n as f64/(y as f64);
+                    }
+                    if x > 0 {
+                        dp[x-1][y][z] = dp[x][y][z] + n as f64/(x as f64);
+                    }
+                }
             }
         }
     }
-    print_lcs(&s, &t, &dp, n, m);
-}
-
-fn main() {
-    let stack_size = 104_857_600; // 100 MB
-    let thd = std::thread::Builder::new().stack_size(stack_size);
-    thd.spawn(|| solve()).unwrap().join().unwrap();
+    println!("{}", dp[0][0][0]);
 }

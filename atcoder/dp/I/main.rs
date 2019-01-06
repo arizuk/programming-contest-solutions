@@ -68,46 +68,23 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-fn print_lcs(a: &Vec<char>, b: &Vec<char>, lcs: &Vec<Vec<usize>>, i: usize, j: usize) {
-    if i == 0 || j == 0 {
-        return;
-    }
-    if a[i-1] == b[j-1] {
-        print_lcs(a, b, lcs, i-1, j-1);
-        print!("{}", a[i-1]);
-    } else {
-        if lcs[i-1][j] >= lcs[i][j-1] {
-            print_lcs(a, b, lcs, i-1, j);
-        } else {
-            print_lcs(a, b, lcs, i, j-1);
-        }
-    }
-}
-
-fn solve() {
-    input!{
-      s: chars,
-      t: chars,
-    }
-
-    let n = s.len();
-    let m = t.len();
-    let mut dp = vec![vec![0; m+1]; n+1];
-
-    for i in 0..n {
-        for j in 0..m {
-            if s[i] == t[j] {
-                dp[i+1][j+1] = dp[i][j] + 1;
-            } else {
-                dp[i+1][j+1] = max(dp[i][j+1], dp[i+1][j]);
-            }
-        }
-    }
-    print_lcs(&s, &t, &dp, n, m);
-}
-
 fn main() {
-    let stack_size = 104_857_600; // 100 MB
-    let thd = std::thread::Builder::new().stack_size(stack_size);
-    thd.spawn(|| solve()).unwrap().join().unwrap();
+    input!{
+      n: usize,
+      ps: [f64; n],
+    }
+    let half = n/2 + 1;
+    let mut dp = vec![vec![0f64; n+1]; n+1];
+    dp[0][0] = 1.0;
+    for i in 0..n {
+        for j in 0..n+1 {
+            dp[i+1][min(half, j+1)] += dp[i][j] * ps[i];
+            dp[i+1][j] += dp[i][j] * (1.0-ps[i]);
+        }
+    }
+    // debug!(half, ps);
+    // for i in 0..n {
+    //     debug!(i, dp[i]);
+    // }
+    println!("{}", dp[n][half]);
 }
