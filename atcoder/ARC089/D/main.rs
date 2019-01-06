@@ -75,99 +75,41 @@ fn main() {
       xycs: [(usize, usize, String); n]
     }
 
-    let mut xycs: Vec<(usize, usize, bool)> = xycs.iter().map(|v|
-        (v.0%k, v.1%k, (if (v.0/k + v.1/k) % 2 == 0 { 'W' } else { 'B' }).to_string() == v.2)
-    ).collect();
+    let mut sxy: Vec<Vec<usize>> = vec![vec![0; k*2+1]; k*2+1];
+    let mut xys = vec![vec![0; k*2]; k*2];
 
-    let mut cnt = xycs.iter().fold(0, |acc, v| if v.2 { acc + 1 } else { acc });
-    let mut xs: Vec<(usize, usize)> = xycs.iter().enumerate().map(|(i, v)| (v.0, i)).collect();
-    xs.sort();
-    let mut ys: Vec<(usize, usize)> = xycs.iter().enumerate().map(|(i, v)| (v.1, i)).collect();
-    ys.sort();
-
-    let mut ddy = 1i64;
-    let mut dy = 0;
-    let mut ans = max(cnt, n-cnt);
-    let mut yi = n-1;
-    let mut xi = n-1;
-    let mut x_end = false;
-    debug!(xycs);
-
-    debug!(n, cnt);
-    for dx in 0..k {
-        // dx: 0 -> k
-        if !x_end {
-            while xs[xi].0 + dx >= k {
-                xycs[xs[xi].1].2 = !xycs[xs[xi].1].2;
-                if xycs[xs[xi].1].2 {
-                    cnt += 1;
-                } else {
-                    cnt -= 1;
-                }
-                if xi == 0 {
-                    x_end = true;
-                    break;
-                }
-                xi -= 1;
-            }
-            ans = max(ans, max(cnt, n-cnt));
+    for &(x, y, ref s) in xycs.iter() {
+        let x = x%(2*k);
+        let mut y = y%(2*k);
+        if *s == 'W'.to_string() {
+            y = (y+k)%(2*k)
         }
-
-        let mut last_yi = n;
-        if yi < n {
-            let mut y_end = false;
-            loop {
-                if ddy > 0 {
-                    // dy: 0 -> k
-                    while ys[yi].0 + dy >= k {
-                        xycs[ys[yi].1].2 = !xycs[ys[yi].1].2;
-                        if xycs[ys[yi].1].2 {
-                            cnt += 1;
-                        } else {
-                            cnt -= 1;
-                        }
-                        last_yi = yi;
-                        if yi == 0 {
-                            y_end = true;
-                            break;
-                        }
-                        yi -= 1;
-                    }
-                    if dy == k-1 {
-                        y_end = true;
-                    }
-
-                } else {
-                    // dy: k -> 0
-                    while ys[yi].0 + dy < k {
-                        xycs[ys[yi].1].2 = !xycs[ys[yi].1].2;
-                        if xycs[ys[yi].1].2 {
-                            cnt += 1;
-                        } else {
-                            cnt -= 1;
-                        }
-                        last_yi = yi;
-                        if yi == n-1 {
-                            y_end = true;
-                            break;
-                        }
-                        yi += 1;
-                    }
-
-                    if dy == 0 {
-                        y_end = true;
-                    }
-                }
-                ans = max(ans, max(cnt, n-cnt));
-                if y_end {
-                    break;
-                }
-                dy = (dy as i64 + ddy) as usize;
-            }
+        xys[x][y] += 1;
+    }
+    for x in 0..2*k {
+        for y in 0..2*k {
+            sxy[x+1][y+1] = sxy[x+1][y] + sxy[x][y+1] + xys[x][y] - sxy[x][y];
         }
-        ddy *= -1;
-        dy = if ddy > 0 { 0 } else { k-1 };
-        yi = last_yi;
+    }
+
+    let sum = |x: usize, lx: usize, y: usize, ly: usize| -> usize {
+        sxy[x+lx][y+ly] + sxy[x][y] - sxy[x+lx][y] - sxy[x][y+ly]
+    };
+
+    let mut ans = 0;
+    for x in 0..k {
+        for y in 0..k {
+            // (x+k-1),(y+k-1)
+            // (x+k-1),(y-1)
+            // (x-1),(y+k-1)
+            // (x-1),(y-1)
+            let mut s = sum(x, k, y, k);
+            s += sum(x+k, k-x, 0, y);
+            s += sum(0, x, y+k, k-y);
+            s += sum(x+k, k-x, y+k, k-y);
+            s += sum(0, x, 0, y);
+            ans = max(ans, max(s, n-s));
+        }
     }
     println!("{}", ans);
 }
