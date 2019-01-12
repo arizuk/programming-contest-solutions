@@ -68,27 +68,20 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-fn search(i: usize, j: usize, h: usize, w: usize, ss: &Vec<Vec<char>>, seen: &mut Vec<Vec<bool>>, c: char, c1: &mut usize, c2: &mut usize) {
-    if seen[i][j] {
-        return;
-    }
+fn search(i: usize, j: usize, ss: &Vec<Vec<char>>, seen: &mut Vec<Vec<bool>>, c: char) -> (usize, usize) {
+    let mut ans = (0, 0);
 
-    if ss[i][j] != c {
-        return;
+    if seen[i][j] || ss[i][j] != c {
+        return ans
     }
 
     if c == '#' {
-        *c1 += 1;
+        ans.0 += 1;
     } else {
-        *c2 += 1;
+        ans.1 += 1;
     }
 
     seen[i][j] = true;
-
-    let i = i as isize;
-    let j = j as isize;
-    let h = h as isize;
-    let w = w as isize;
 
     let ds = [
         [1,0],
@@ -98,17 +91,22 @@ fn search(i: usize, j: usize, h: usize, w: usize, ss: &Vec<Vec<char>>, seen: &mu
     ];
 
     for d in ds.iter() {
-        let dx = d[0];
-        let dy = d[1];
-        if i + dx < 0 || i + dx >= h {
+        let nx = i as i64 + d[0];
+        let ny = j as i64 + d[1];
+        if nx < 0 || nx >= ss.len() as _ {
             continue;
         }
 
-        if j + dy < 0 || j + dy >= w {
+        if ny < 0 || ny >= ss[0].len() as _ {
             continue;
         }
-        search((i+dx) as usize, (j+dy) as usize, h as usize, w as usize, ss, seen, if c == '#'  { '.' } else { '#' }, c1, c2);
+
+        let nc = if c == '#'  { '.' } else { '#' };
+        let ret = search(nx as _, ny as _, ss, seen, nc);
+        ans.0 += ret.0;
+        ans.1 += ret.1;
     }
+    ans
 }
 
 fn main() {
@@ -125,10 +123,8 @@ fn main() {
     for i in 0..h {
         for j in 0..w {
             if !seen[i][j] {
-                let mut c1 = 0;
-                let mut c2 = 0;
                 if ss[i][j] == '#' {
-                    search(i, j, h, w, &ss, &mut seen, '#', &mut c1, &mut c2);
+                    let (c1, c2) = search(i, j, &ss, &mut seen, '#');
                     ans += c1 * c2;
                 }
             }
