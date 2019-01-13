@@ -72,20 +72,17 @@ fn main() {
     input!{
       s: chars,
     }
-    let t = "keyence".to_string();
-    for i in 0..s.len() as i64 {
-        for l in 0..s.len() as i64 {
-            let mut ss = vec![];
-            for ii in 0..s.len() as i64 {
-                if ii >= i && ii <= i+l-1 {
-                    continue;
+
+    for i in 0..s.len() {
+        for j in i..s.len()+1 {
+            let mut t = String::new();
+            for k in 0..s.len() {
+                if !(k >= i && k < j) {
+                    t.push(s[k]);
                 }
-                ss.push(s[ii as usize])
             }
-            let s2: String = ss.iter().map(|&v| v).collect();
-            if s2 == t {
-                println!("{}", "YES");
-                return;
+            if t == "keyence" {
+                return println!("{}", "YES");
             }
         }
     }
