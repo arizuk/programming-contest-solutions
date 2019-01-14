@@ -86,7 +86,8 @@ fn main() {
     let mut ans = 0;
     for &(v, infinite) in vs.iter() {
         if infinite {
-            ans += h/v + if h%v == 0 { 0 } else { 1 };
+            // ans += h/v + if h%v == 0 { 0 } else { 1 };
+            ans += (h + v - 1)/v;
             return println!("{}", ans);
         } else {
             h -= v;
