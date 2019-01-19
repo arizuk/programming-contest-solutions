@@ -67,6 +67,7 @@ use std::cmp::{min, max};
 
 #[allow(unused_imports)]
 use std::io::Write;
+use std::collections::VecDeque;
 
 fn main() {
     input!{
@@ -74,36 +75,27 @@ fn main() {
       m: usize,
       xys: [(usize, usize); m],
     }
-
     let mut edges = vec![vec![]; n];
-    let mut h = vec![0; n];
+    let mut cnt = vec![0; n];
     for &(x, y) in xys.iter() {
-        edges[x-1].push(y-1);
-        h[y-1] += 1;
+        edges[y-1].push(x-1);
+        cnt[x-1] += 1;
     }
 
-    let mut st = Vec::new();
-    for i in 0..edges.len() {
-        if h[i] == 0 {
-            st.push(i);
+    let mut q = VecDeque::new();
+    for i in 0..n {
+        if cnt[i] == 0 {
+            q.push_back(i);
         }
     }
 
-    let mut nodes = vec![];
-    while let Some(i) = st.pop() {
-        nodes.push(i);
-        for &t in edges[i].iter() {
-            h[t] -= 1;
-            if h[t] == 0 {
-                st.push(t);
-            }
-        }
-    }
     let mut dp = vec![0; n];
-
-    for &i in nodes.iter() {
-        for &t in edges[i].iter() {
-            dp[t] = max(dp[t], dp[i]+1);
+    while let Some(node) = q.pop_front() {
+        // debug!(node);
+        for &edge in edges[node].iter() {
+            // debug!(node, edge);
+            dp[edge] = max(dp[edge], dp[node] + 1);
+            q.push_back(edge);
         }
     }
     println!("{}", dp.iter().max().unwrap());
