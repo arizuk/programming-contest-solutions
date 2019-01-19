@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 fn main() {
   let inputs = [
     (5,3),
@@ -18,20 +20,20 @@ fn main() {
   }
   println!("edges={:?}", edges);
 
-  let mut st = Vec::new();
+  let mut st = VecDeque::new();
   for i in 0..edges.len() {
     if h[i] == 0 {
-      st.push(i);
+      st.push_back(i);
     }
   }
 
   let mut ans = vec![];
-  while let Some(i) = st.pop() {
+  while let Some(i) = st.pop_front() {
     ans.push(i);
     for &t in edges[i].iter() {
       h[t] -= 1;
       if h[t] == 0 {
-        st.push(t);
+        st.push_back(t);
       }
     }
   }

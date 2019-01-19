@@ -67,6 +67,7 @@ use std::cmp::{min, max};
 
 #[allow(unused_imports)]
 use std::io::Write;
+use std::collections::VecDeque;
 
 fn main() {
     input!{
@@ -82,20 +83,20 @@ fn main() {
         h[y-1] += 1;
     }
 
-    let mut st = Vec::new();
+    let mut st = VecDeque::new();
     for i in 0..edges.len() {
         if h[i] == 0 {
-            st.push(i);
+            st.push_back(i);
         }
     }
 
     let mut nodes = vec![];
-    while let Some(i) = st.pop() {
+    while let Some(i) = st.pop_front() {
         nodes.push(i);
         for &t in edges[i].iter() {
             h[t] -= 1;
             if h[t] == 0 {
-                st.push(t);
+                st.push_back(t);
             }
         }
     }

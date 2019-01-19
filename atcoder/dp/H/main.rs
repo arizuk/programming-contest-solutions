@@ -68,40 +68,28 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-fn rec(dp: &mut Vec<Vec<Vec<f64>>>, n: usize, i: usize, j: usize, k: usize) -> f64 {
-    if dp[i][j][k] > 0f64 {
-        return dp[i][j][k];
-    }
-    if i == 0 && j == 0 && k == 0 {
-        return 0.0;
-    }
-    let mut ans = 0.0 as f64;
-    if i > 0 { ans += rec(dp, n, i-1, j, k) * i as f64; }
-    if j > 0 { ans += rec(dp, n, i+1, j-1, k) * j as f64; }
-    if k > 0 { ans += rec(dp, n, i, j+1, k-1) * k as f64; }
-
-    ans += n as _;
-    ans *= 1.0 / (i + j + k) as f64;
-
-    dp[i][j][k] = ans;
-    ans
-}
+const MOD:usize = 1e9 as usize + 7;
 
 fn main() {
     input!{
-      n: usize,
-      aa: [usize; n],
+      h: usize,
+      w: usize,
+      aa: [chars; h],
     }
+    let mut dp = vec![vec![0; w]; h];
+    dp[0][0] = 1;
 
-    let mut xx = 0;
-    let mut yy = 0;
-    let mut zz = 0;
-    for i in 0..n {
-        if aa[i] == 1 { xx += 1; }
-        if aa[i] == 2 { yy += 1; }
-        if aa[i] == 3 { zz += 1; }
+    for i in 0..h {
+        for j in 0..w {
+            if i+1 < h && aa[i+1][j] == '.' {
+                dp[i+1][j] += dp[i][j];
+                dp[i+1][j] = dp[i+1][j] % MOD;
+            }
+            if j+1 < w && aa[i][j+1] == '.' {
+                dp[i][j+1] += dp[i][j];
+                dp[i][j+1] = dp[i][j+1] % MOD;
+            }
+        }
     }
-    let mut dp = vec![vec![vec![-1.0; n+1]; n+1]; n+1];
-    dp[0][0][0] = 0.0;
-    println!("{}", rec(&mut dp, n, xx, yy, zz));
+    println!("{}", dp[h-1][w-1]);
 }

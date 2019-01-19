@@ -68,40 +68,29 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-fn rec(dp: &mut Vec<Vec<Vec<f64>>>, n: usize, i: usize, j: usize, k: usize) -> f64 {
-    if dp[i][j][k] > 0f64 {
-        return dp[i][j][k];
-    }
-    if i == 0 && j == 0 && k == 0 {
-        return 0.0;
-    }
-    let mut ans = 0.0 as f64;
-    if i > 0 { ans += rec(dp, n, i-1, j, k) * i as f64; }
-    if j > 0 { ans += rec(dp, n, i+1, j-1, k) * j as f64; }
-    if k > 0 { ans += rec(dp, n, i, j+1, k-1) * k as f64; }
-
-    ans += n as _;
-    ans *= 1.0 / (i + j + k) as f64;
-
-    dp[i][j][k] = ans;
-    ans
-}
-
 fn main() {
     input!{
       n: usize,
+      k: usize,
       aa: [usize; n],
     }
+    let mut dp = vec![false; k+1];
 
-    let mut xx = 0;
-    let mut yy = 0;
-    let mut zz = 0;
-    for i in 0..n {
-        if aa[i] == 1 { xx += 1; }
-        if aa[i] == 2 { yy += 1; }
-        if aa[i] == 3 { zz += 1; }
+    for i in 1..k+1 {
+        let mut ok = false;
+        for j in 0..n {
+            if i < aa[j] {
+                continue;
+            }
+            if dp[i-aa[j]] == false {
+                ok = true;
+            }
+        }
+        dp[i] = ok;
     }
-    let mut dp = vec![vec![vec![-1.0; n+1]; n+1]; n+1];
-    dp[0][0][0] = 0.0;
-    println!("{}", rec(&mut dp, n, xx, yy, zz));
+    if dp[k] {
+        println!("{}", "First");
+    } else {
+        println!("{}", "Second");
+    }
 }

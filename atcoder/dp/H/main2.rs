@@ -67,41 +67,39 @@ use std::cmp::{min, max};
 
 #[allow(unused_imports)]
 use std::io::Write;
+use std::collections::VecDeque;
 
-fn rec(dp: &mut Vec<Vec<Vec<f64>>>, n: usize, i: usize, j: usize, k: usize) -> f64 {
-    if dp[i][j][k] > 0f64 {
-        return dp[i][j][k];
-    }
-    if i == 0 && j == 0 && k == 0 {
-        return 0.0;
-    }
-    let mut ans = 0.0 as f64;
-    if i > 0 { ans += rec(dp, n, i-1, j, k) * i as f64; }
-    if j > 0 { ans += rec(dp, n, i+1, j-1, k) * j as f64; }
-    if k > 0 { ans += rec(dp, n, i, j+1, k-1) * k as f64; }
-
-    ans += n as _;
-    ans *= 1.0 / (i + j + k) as f64;
-
-    dp[i][j][k] = ans;
-    ans
-}
+const MOD:usize = 1e9 as usize + 7;
 
 fn main() {
     input!{
-      n: usize,
-      aa: [usize; n],
+      h: usize,
+      w: usize,
+      aa: [chars; h],
     }
+    let mut dp = vec![vec![0; w+1]; h+1];
+    dp[0][0] = 0;
+    dp[0][1] = 1;
+    dp[1][0] = 0;
 
-    let mut xx = 0;
-    let mut yy = 0;
-    let mut zz = 0;
-    for i in 0..n {
-        if aa[i] == 1 { xx += 1; }
-        if aa[i] == 2 { yy += 1; }
-        if aa[i] == 3 { zz += 1; }
+    let mut q = VecDeque::new();
+    q.push_back((1, 1));
+
+    while let Some((x, y)) = q.pop_front() {
+        if aa[x-1][y-1] == '#' {
+            continue;
+        }
+        if dp[x][y] != 0 {
+            continue;
+        }
+        dp[x][y] = (dp[x-1][y] + dp[x][y-1]) % MOD;
+
+        if x+1 <= h {
+            q.push_back((x+1, y));
+        }
+        if y+1 <= w {
+            q.push_back((x, y+1));
+        }
     }
-    let mut dp = vec![vec![vec![-1.0; n+1]; n+1]; n+1];
-    dp[0][0][0] = 0.0;
-    println!("{}", rec(&mut dp, n, xx, yy, zz));
+    println!("{}", dp[h][w]);
 }
