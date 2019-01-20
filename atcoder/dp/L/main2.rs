@@ -68,13 +68,15 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-fn rec(dp: &mut Vec<Vec<Option<i64>>>, aa: &Vec<i64>, i: usize, j: usize) -> i64 {
+const INF: i64 = 1 << 60;
+
+fn rec(dp: &mut Vec<Vec<i64>>, aa: &Vec<i64>, i: usize, j: usize) -> i64 {
     let n = aa.len();
     if i + j >= n {
         return 0;
     }
-    if dp[i][j].is_some() {
-        return dp[i][j].unwrap();
+    if dp[i][j] != INF {
+        return dp[i][j];
     }
 
     let ans;
@@ -89,7 +91,7 @@ fn rec(dp: &mut Vec<Vec<Option<i64>>>, aa: &Vec<i64>, i: usize, j: usize) -> i64
             rec(dp, aa, i, j+1) - aa[n-j-1]
         )
     }
-    dp[i][j] = Some(ans);
+    dp[i][j] = ans;
     ans
 }
 
@@ -98,6 +100,6 @@ fn main() {
       n: usize,
       aa: [i64; n],
     }
-    let mut dp = vec![vec![None; n]; n];
+    let mut dp = vec![vec![INF; n]; n];
     println!("{}", rec(&mut dp, &aa, 0, 0));
 }

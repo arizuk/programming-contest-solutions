@@ -67,37 +67,52 @@ use std::cmp::{min, max};
 
 #[allow(unused_imports)]
 use std::io::Write;
-
-fn rec(dp: &mut Vec<Vec<Option<i64>>>, aa: &Vec<i64>, i: usize, j: usize) -> i64 {
-    let n = aa.len();
-    if i + j >= n {
-        return 0;
-    }
-    if dp[i][j].is_some() {
-        return dp[i][j].unwrap();
-    }
-
-    let ans;
-    if (i+j)%2 == 0 {
-        ans = max(
-            rec(dp, aa, i+1, j) + aa[i],
-            rec(dp, aa, i, j+1) + aa[n-j-1]
-        )
-    } else {
-        ans = min(
-            rec(dp, aa, i+1, j) - aa[i],
-            rec(dp, aa, i, j+1) - aa[n-j-1]
-        )
-    }
-    dp[i][j] = Some(ans);
-    ans
-}
+use std::collections::VecDeque;
 
 fn main() {
     input!{
       n: usize,
-      aa: [i64; n],
+      k: usize,
+      tds: [(usize, usize); n],
     }
-    let mut dp = vec![vec![None; n]; n];
-    println!("{}", rec(&mut dp, &aa, 0, 0));
+    let mut tds = tds;
+    tds.sort_by_key(|&(t, d)| d);
+    tds.reverse();
+
+    let mut ate = vec![false; n+1];
+    let mut kind = 0;
+    let mut ans = 0;
+    let mut s1 = VecDeque::new();
+    let mut s2 = VecDeque::new();
+    for i in 0..k {
+        let (t, d) = tds[i];
+        if ate[t] == false {
+            ate[t] = true;
+            kind += 1;
+        } else {
+            s1.push_back((t, d));
+        }
+        ans += d;
+    }
+    for i in k..n {
+        let (t, d) = tds[i];
+        if ate[t] == false {
+            ate[t] = true;
+            s2.push_back((t, d));
+        }
+    }
+    ans += kind*kind;
+
+    let mut v = ans;
+    while let Some((t, d)) = s1.pop_back() {
+        v -= d;
+        if let Some((t1, d1)) = s2.pop_front() {
+            kind += 1;
+            v += d1 + kind*kind - (kind-1)*(kind-1);
+            ans = max(v, ans);
+        } else {
+            break;
+        }
+    }
+    println!("{}", ans);
 }

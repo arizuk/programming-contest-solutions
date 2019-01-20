@@ -68,36 +68,26 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-fn rec(dp: &mut Vec<Vec<Option<i64>>>, aa: &Vec<i64>, i: usize, j: usize) -> i64 {
-    let n = aa.len();
-    if i + j >= n {
-        return 0;
-    }
-    if dp[i][j].is_some() {
-        return dp[i][j].unwrap();
-    }
-
-    let ans;
-    if (i+j)%2 == 0 {
-        ans = max(
-            rec(dp, aa, i+1, j) + aa[i],
-            rec(dp, aa, i, j+1) + aa[n-j-1]
-        )
-    } else {
-        ans = min(
-            rec(dp, aa, i+1, j) - aa[i],
-            rec(dp, aa, i, j+1) - aa[n-j-1]
-        )
-    }
-    dp[i][j] = Some(ans);
-    ans
-}
-
 fn main() {
     input!{
       n: usize,
-      aa: [i64; n],
+      hs: [usize; n],
     }
-    let mut dp = vec![vec![None; n]; n];
-    println!("{}", rec(&mut dp, &aa, 0, 0));
+    let mut hs = hs;
+    let mut ans = 0;
+    while hs.iter().sum::<usize>() > 0usize {
+        let mut mode = true;
+        for i in 0..n {
+            if hs[i] > 0 {
+                hs[i] -= 1;
+                if mode {
+                    ans += 1;
+                    mode = false;
+                }
+            } else {
+                mode = true;
+            }
+        }
+    }
+    println!("{}", ans);
 }

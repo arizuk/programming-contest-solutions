@@ -67,37 +67,31 @@ use std::cmp::{min, max};
 
 #[allow(unused_imports)]
 use std::io::Write;
+use std::collections::HashSet;
 
-fn rec(dp: &mut Vec<Vec<Option<i64>>>, aa: &Vec<i64>, i: usize, j: usize) -> i64 {
-    let n = aa.len();
-    if i + j >= n {
-        return 0;
-    }
-    if dp[i][j].is_some() {
-        return dp[i][j].unwrap();
-    }
-
-    let ans;
-    if (i+j)%2 == 0 {
-        ans = max(
-            rec(dp, aa, i+1, j) + aa[i],
-            rec(dp, aa, i, j+1) + aa[n-j-1]
-        )
+fn f(n: usize) -> usize {
+    if n%2 == 0 {
+        n/2
     } else {
-        ans = min(
-            rec(dp, aa, i+1, j) - aa[i],
-            rec(dp, aa, i, j+1) - aa[n-j-1]
-        )
+        3*n + 1
     }
-    dp[i][j] = Some(ans);
-    ans
 }
 
 fn main() {
     input!{
-      n: usize,
-      aa: [i64; n],
+      s: usize,
     }
-    let mut dp = vec![vec![None; n]; n];
-    println!("{}", rec(&mut dp, &aa, 0, 0));
+
+    let mut set = HashSet::new();
+    set.insert(s);
+    let mut prev = s;
+    for m in 2..1000001 {
+        let v = f(prev);
+        prev = v;
+        if set.contains(&v) {
+            return println!("{}", m);
+        }
+        set.insert(v);
+    }
+    panic!("error");
 }
