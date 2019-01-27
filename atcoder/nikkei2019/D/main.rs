@@ -76,15 +76,12 @@ fn main() {
       abs: [(usize, usize); n-1+m],
     }
     let mut edges = vec![vec![]; n];
-    let mut rev_edges = vec![vec![]; n];
     let mut h = vec![0; n];
     for i in 0..abs.len() {
         let (a, b) = abs[i];
         edges[a-1].push(b-1);
-        rev_edges[b-1].push(a-1);
         h[b-1] += 1;
     }
-    // debug!(edges);
 
     let mut st = VecDeque::new();
     for i in 0..edges.len() {
@@ -92,47 +89,18 @@ fn main() {
             st.push_back(i);
         }
     }
-    // debug!(h);
 
-    let mut sorted = vec![];
+    let mut ans: Vec<i64> = vec![-1; n];
     while let Some(i) = st.pop_front() {
-        sorted.push(i);
         for &t in edges[i].iter() {
             h[t] -= 1;
             if h[t] == 0 {
                 st.push_back(t);
+                ans[t] = i as i64;
             }
         }
     }
-
-    let mut order = vec![0; n];
     for i in 0..n {
-        let v = sorted[i];
-        order[v] = i;
-    }
-
-    for i in 0..n {
-        let parents = &rev_edges[i];
-        // debug!(i, parents);
-        if parents.len() == 0 {
-            println!("{}", 0);
-            continue;
-        }
-
-        if parents.len() == 1 {
-            println!("{}", parents[0]+1);
-            continue;
-        }
-
-        let mut pindex = 0;
-        let mut porder = order[ parents[pindex] ];
-        for j in 0..parents.len() {
-            let po = order[ parents[j] ];
-            if po > porder {
-                pindex = j;
-                porder = po;
-            }
-        }
-        println!("{}", parents[pindex]+1);
+        println!("{}", ans[i] + 1);
     }
 }
