@@ -11,7 +11,6 @@ fn main() {
     (4,3),
     (1,3)
   ];
-
   let mut edges = vec![vec![]; 5];
   let mut h = vec![0; 5];
   for &(x, y) in inputs.iter() {
