@@ -73,7 +73,7 @@ fn ok(hs: &[i64], n: i64, a: i64, b: i64) -> bool {
     let mut cnt = 0;
     for i in 0..hs.len() {
         let r = hs[i] - b*n;
-        cnt += (r + d - 1) / d;
+        cnt += max(0, (r + d - 1) / d);
     }
     cnt <= n
 }
