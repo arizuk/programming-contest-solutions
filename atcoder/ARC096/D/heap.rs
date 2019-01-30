@@ -93,90 +93,73 @@ impl Heap {
 
     fn add(&mut self, v: Node) {
         let mut cur = self.last;
-
-        self.buf[self.last] = Some(v);
+        self.buf[cur] = Some(v);
         self.last += 1;
 
         loop {
             if cur == 0 { break; }
-
             let par = (cur-1)/2;
-            let par_v = self.buf[par].unwrap();
-            if par_v > v {
+
+            // let v1 = self.buf[par].as_ref().map(|n| n.v).unwrap_or(0);
+            // let v2 = self.buf[cur].as_ref().map(|n| n.v).unwrap_or(0);
+
+            if self.buf[par] > self.buf[cur] {
                 break;
             }
-
-            let tmp = self.buf[par];
-            self.buf[par] = Some(v);
-            self.buf[cur] = tmp;
+            self.buf.swap(par, cur);
             cur = par;
         }
     }
 
-    // fn pop(&mut self) -> Option<Node> {
-    //     if self.last == 0 {
-    //         return None;
-    //     }
+    fn pop(&mut self) -> Option<Node> {
+        let peek = std::mem::replace(&mut self.buf[0], None);
+        if self.last == 0 {
+            return peek
+        }
 
-    //     let peek = self.buf[0].unwrap();
+        let last_node = std::mem::replace(&mut self.buf[self.last-1], None);
+        self.last -= 1;
 
-    //     let v = self.buf[self.last-1];
-    //     self.buf[self.last-1] = None;
-    //     self.last -= 1;
+        let mut cur = 0;
+        self.buf[cur] = last_node;
+        loop {
+            let left = (cur+1) * 2 - 1;
+            let right = (cur+1) * 2;
 
-    //     if self.last == 0 {
-    //         return Some(peek);
-    //     }
+            if left >= self.buf.len() {
+                break;
+            }
 
-    //     let mut cur = 0;
-    //     self.buf[cur] = v;
-    //     loop {
-    //         let left = (cur+1) * 2 - 1;
-    //         let right = (cur+1) * 2;
+            if self.buf[left] <= self.buf[cur] && self.buf[right] <= self.buf[cur] {
+                break;
+            }
 
-    //         if left >= self.buf.len() {
-    //             break;
-    //         }
+            if self.buf[left] > self.buf[right] {
+                self.buf.swap(left, cur);
+                cur = left;
+            } else {
+                self.buf.swap(right, cur);
+                cur = right;
+            }
+        }
 
-    //         let cur_v = self.buf[cur].unwrap().v;
-    //         let left_v = match self.buf[left] {
-    //             Some(n) => n.v,
-    //             None => 0,
-    //         };
-    //         let right_v = match self.buf[right] {
-    //             Some(n) => n.v,
-    //             None => 0,
-    //         };
-
-    //         if left_v <= cur_v && right_v <= cur_v {
-    //             break;
-    //         }
-
-    //         if left_v < right_v {
-    //             let tmp = self.buf[right];
-    //             self.buf[right] = self.buf[cur];
-    //             self.buf[cur] = tmp;
-    //             cur = right;
-    //         } else {
-    //             let tmp = self.buf[left];
-    //             self.buf[left] = self.buf[cur];
-    //             self.buf[cur] = tmp;
-    //             cur = left;
-    //         }
-    //     }
-
-    //     Some(peek)
-    // }
+        peek
+    }
 }
 
 fn main() {
-    let mut heap = Heap::new(3);
+    let mut heap = Heap::new(10);
     heap.add(Node { v: 1, i: 1 });
     heap.add(Node { v: 5, i: 1 });
     heap.add(Node { v: 2, i: 1 });
+    heap.add(Node { v: 3, i: 1 });
+    heap.add(Node { v: 10, i: 1 });
     debug!(heap);
-    // debug!(heap.pop());
-    // debug!(heap.pop());
-    // debug!(heap.pop());
-    // debug!(heap.pop());
+    debug!(heap.pop());
+    debug!(heap.pop());
+    debug!(heap.pop());
+    debug!(heap.pop());
+    debug!(heap.pop());
+    debug!(heap.pop());
+    println!("{}", None < Some(Node { v: -1, i: 0 }));
 }
