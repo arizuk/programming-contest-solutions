@@ -71,30 +71,28 @@ use std::io::Write;
 fn main() {
     input!{
       n: usize,
-      k: usize,
-      aa: [usize; n],
+      x: i64,
+      aa: [i64; n],
     }
-    let mut dp = vec![vec![None; 2]; 42];
-    dp[41][0] = Some(0);
-
-    for d in (0..41).rev() {
-        let bit = 1 << d;
-        let mut n1 = 0;
-        for i in 0..n {
-            if aa[i] & bit > 0 {
-                n1 += 1;
-            }
+    let mut aa = aa;
+    let mut ans = 0;
+    for i in 0..n-1 {
+        let mut a = aa[i];
+        let mut b = aa[i+1];
+        if a + b > x {
+            b = b - ((a + b) - x);
+            b = max(0, b);
         }
-        let n0 = n - n1;
-
-        if k & bit > 0 {
-            dp[d][0] = dp[d+1][0].map(|v| v + n0 * bit); // 1->1
-            dp[d][1] = dp[d+1][0].map(|v| v + n1 * bit); // 1->0
-        } else {
-            dp[d][0] = dp[d+1][0].map(|v| v + n1 * bit);
+        if b == 0 && a > x {
+            a = x;
         }
-        dp[d][1] = max(dp[d][1], dp[d+1][1].map(|v| v + bit * max(n0, n1)));
+
+        // debug!(x, aa[i], aa[i+1], a, b);
+
+        ans += aa[i] - a;
+        ans += aa[i+1] - b;
+        aa[i] = a;
+        aa[i+1] = b;
     }
-    let ans = max(dp[0][0], dp[0][1]);
-    println!("{}", ans.unwrap());
+    println!("{}", ans);
 }

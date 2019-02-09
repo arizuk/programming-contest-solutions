@@ -74,27 +74,45 @@ fn main() {
       k: usize,
       aa: [usize; n],
     }
-    let mut dp = vec![vec![None; 2]; 42];
-    dp[41][0] = Some(0);
-
-    for d in (0..41).rev() {
-        let bit = 1 << d;
-        let mut n1 = 0;
+    let half = n/2 + n%2;
+    let mut v_max = 0;
+    for dd in (0..41).rev() {
+        let v = 1 << dd;
+        let mut cnt = 0;
         for i in 0..n {
-            if aa[i] & bit > 0 {
-                n1 += 1;
+            if aa[i] & v > 0 {
+                cnt += 1;
             }
         }
-        let n0 = n - n1;
-
-        if k & bit > 0 {
-            dp[d][0] = dp[d+1][0].map(|v| v + n0 * bit); // 1->1
-            dp[d][1] = dp[d+1][0].map(|v| v + n1 * bit); // 1->0
-        } else {
-            dp[d][0] = dp[d+1][0].map(|v| v + n1 * bit);
+        if cnt < half {
+            v_max += v;
         }
-        dp[d][1] = max(dp[d][1], dp[d+1][1].map(|v| v + bit * max(n0, n1)));
     }
-    let ans = max(dp[0][0], dp[0][1]);
-    println!("{}", ans.unwrap());
+
+    let mut ans = 0;
+    let k = k+1;
+    for i in 0..41 {
+        let mut v = 0;
+        for j in i+1..41 {
+            if k & (1 << j) > 0 {
+                v += 1 << j;
+            }
+        }
+
+        if k & (1 << i) == 0 {
+            continue;
+        }
+
+        for j in 0..i {
+            if v_max & (1 << j) > 0 {
+                v += 1 << j;
+            }
+        }
+        let mut xor = 0;
+        for i in 0..n {
+            xor += aa[i] ^ v;
+        }
+        ans = max(ans, xor);
+    }
+    println!("{}", ans);
 }
