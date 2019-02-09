@@ -70,57 +70,26 @@ use std::io::Write;
 
 fn main() {
     input!{
-      s: chars,
+      h: usize,
+      w: usize,
+      cs: [[usize; 10]; 10],
+      aa: [i64; w*h],
     }
-    let n = s.len();
-    let mut dp = vec![vec![0; 4001]; 4001];
-    dp[0][0] = 1;
-    let mut r = 0;
-    let mut b = 0;
+    let mut cs = cs;
 
-    const MOD: usize = 998244353;
-
-    for i in 0..n*2 {
-        if i < n {
-            match s[i] {
-                '0' => {
-                    r += 2;
-                },
-                '1' => {
-                    r += 1;
-                    b += 1;
-                },
-                '2' => {
-                    b += 2;
-                },
-                _ => {}
+    // ワーシャルフロイド
+    for k in 0..10 {
+        for i in 0..10 {
+            for j in 0..10 {
+                cs[i][j] = min(cs[i][j], cs[i][k] + cs[k][j]);
             }
-        }
-
-        let k = i+1;
-        for nr in 0..k+1 {
-            let nb = k-nr;
-            if !(nr <= r && nb <= b) {
-                continue;
-            }
-            // debug!(i, nr, nb);
-
-            if nr > 0 {
-                dp[nr][nb] += dp[nr-1][nb];
-            }
-            if nb > 0 {
-                dp[nr][nb] += dp[nr][nb-1];
-            }
-            dp[nr][nb] = dp[nr][nb] % MOD;
-            debug!(k, nr, nb, dp[nr][nb]);
         }
     }
 
     let mut ans = 0;
-    for nr in 0..2*n+1 {
-        let nb = 2*n - nr;
-        ans += dp[nr][nb];
-        ans %= MOD;
+    for i in 0..w*h {
+        if aa[i] == - 1 || aa[i] == 1 { continue; }
+        ans += cs[aa[i] as usize ][1];
     }
     println!("{}", ans);
 }

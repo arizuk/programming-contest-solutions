@@ -70,57 +70,9 @@ use std::io::Write;
 
 fn main() {
     input!{
-      s: chars,
-    }
-    let n = s.len();
-    let mut dp = vec![vec![0; 4001]; 4001];
-    dp[0][0] = 1;
-    let mut r = 0;
-    let mut b = 0;
-
-    const MOD: usize = 998244353;
-
-    for i in 0..n*2 {
-        if i < n {
-            match s[i] {
-                '0' => {
-                    r += 2;
-                },
-                '1' => {
-                    r += 1;
-                    b += 1;
-                },
-                '2' => {
-                    b += 2;
-                },
-                _ => {}
-            }
-        }
-
-        let k = i+1;
-        for nr in 0..k+1 {
-            let nb = k-nr;
-            if !(nr <= r && nb <= b) {
-                continue;
-            }
-            // debug!(i, nr, nb);
-
-            if nr > 0 {
-                dp[nr][nb] += dp[nr-1][nb];
-            }
-            if nb > 0 {
-                dp[nr][nb] += dp[nr][nb-1];
-            }
-            dp[nr][nb] = dp[nr][nb] % MOD;
-            debug!(k, nr, nb, dp[nr][nb]);
-        }
+      a: usize,
+      b: usize,
     }
 
-    let mut ans = 0;
-    for nr in 0..2*n+1 {
-        let nb = 2*n - nr;
-        ans += dp[nr][nb];
-        ans %= MOD;
-    }
-    println!("{}", ans);
+
 }
