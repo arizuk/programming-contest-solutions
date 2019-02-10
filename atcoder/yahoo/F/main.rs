@@ -103,8 +103,6 @@ fn main() {
             if !(nr <= r && nb <= b) {
                 continue;
             }
-            // debug!(i, nr, nb);
-
             if nr > 0 {
                 dp[nr][nb] += dp[nr-1][nb];
             }
@@ -112,15 +110,7 @@ fn main() {
                 dp[nr][nb] += dp[nr][nb-1];
             }
             dp[nr][nb] = dp[nr][nb] % MOD;
-            debug!(k, nr, nb, dp[nr][nb]);
         }
     }
-
-    let mut ans = 0;
-    for nr in 0..2*n+1 {
-        let nb = 2*n - nr;
-        ans += dp[nr][nb];
-        ans %= MOD;
-    }
-    println!("{}", ans);
+    println!("{}", dp[r][b]);
 }
