@@ -29,11 +29,6 @@ macro_rules! input_inner {
         let $var = read_value!($next, $t);
         input_inner!{$next $($r)*}
     };
-
-    ($next:expr, mut $var:ident : $t:tt $($r:tt)*) => {
-        let mut $var = read_value!($next, $t);
-        input_inner!{$next $($r)*}
-    };
 }
 
 #[allow(unused_macros)]
@@ -73,5 +68,22 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
+pub fn gcd(a: u64, b: u64) -> u64 {
+    if b == 0 {
+        a
+    } else {
+        gcd(b, a % b)
+    }
+}
+
 fn main() {
+    input!{
+      n: usize,
+      aa: [u64; n],
+    }
+    let mut ans = gcd(aa[0], aa[1]);
+    for &a in &aa {
+        ans = gcd(ans, a);
+    }
+    println!("{}", ans);
 }

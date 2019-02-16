@@ -74,4 +74,37 @@ use std::cmp::{min, max};
 use std::io::Write;
 
 fn main() {
+    input!{
+      mut n: usize,
+      m: usize,
+      aa: [usize; m],
+    }
+    let nums = [
+        0, 2 , 5 , 5 , 4 , 5 , 6 , 3 , 7 , 6
+    ];
+    let mut usable = vec![false; 10];
+    for a in aa { usable[a] = true; }
+    let mut dp = vec![None; n+1];
+    dp[0] = Some(0);
+    for i in 0..n+1 {
+        for j in 1..10 {
+            if !usable[j] { continue; }
+            if i >= nums[j] {
+                dp[i] = max(dp[i], dp[i-nums[j]].map(|v| v + 1));
+            }
+        }
+    }
+
+    let mut ans = vec![];
+    while n > 0 {
+        for j in (1..10).rev() {
+            if !usable[j] { continue; }
+            if n >= nums[j] && dp[n-nums[j]] == dp[n].map(|v| v-1) {
+                n -= nums[j];
+                ans.push(j);
+                break;
+            }
+        }
+    }
+    println!("{}", ans.iter().map(|v| v.to_string()).collect::<String>());
 }

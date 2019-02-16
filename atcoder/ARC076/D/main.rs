@@ -29,11 +29,6 @@ macro_rules! input_inner {
         let $var = read_value!($next, $t);
         input_inner!{$next $($r)*}
     };
-
-    ($next:expr, mut $var:ident : $t:tt $($r:tt)*) => {
-        let mut $var = read_value!($next, $t);
-        input_inner!{$next $($r)*}
-    };
 }
 
 #[allow(unused_macros)]
@@ -74,4 +69,28 @@ use std::cmp::{min, max};
 use std::io::Write;
 
 fn main() {
+    input!{
+      n: usize,
+      xys: [(usize, usize); n],
+    }
+
+    let mut xs: Vec<(usize, usize)> = xys.iter().enumerate().map(|(i, &(x, y))| (x, i)).collect();
+    xs.sort();
+    let mut ys: Vec<(usize, usize)> = xys.iter().enumerate().map(|(i, &(x, y))| (y, i)).collect();
+    ys.sort();
+
+    let x_tbl = vec![0; n];
+    let y_tbl = vec![0; n];
+    for i in 0..n {
+        let (x, j) = xs[i];
+        x_tbl[j] = i;
+
+        let (y, j) = ys[i];
+        y_tbl[j] = i;
+    }
+
+    for i in 0..n {
+        let (x, y) = xys[i];
+        let nx = x_tbl[i];
+    }
 }

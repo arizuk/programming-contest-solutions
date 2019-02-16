@@ -29,11 +29,6 @@ macro_rules! input_inner {
         let $var = read_value!($next, $t);
         input_inner!{$next $($r)*}
     };
-
-    ($next:expr, mut $var:ident : $t:tt $($r:tt)*) => {
-        let mut $var = read_value!($next, $t);
-        input_inner!{$next $($r)*}
-    };
 }
 
 #[allow(unused_macros)]
@@ -74,4 +69,25 @@ use std::cmp::{min, max};
 use std::io::Write;
 
 fn main() {
+    input!{
+      n: usize,
+      x: i64,
+      aa: [i64; n],
+    }
+    let mut aa = aa;
+    let mut ans = 0;
+    let mut x = x;
+    aa.sort();
+    for i in 0..n {
+        if x < aa[i] {
+            x = 0;
+            break;
+        }
+        ans += 1;
+        x -= aa[i];
+    }
+    if x > 0 {
+        ans -= 1;
+    }
+    println!("{}", ans);
 }
