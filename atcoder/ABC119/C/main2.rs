@@ -73,20 +73,53 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-const INF: i64 = 1 << 50;
+fn search(ls: &[i64], ans: &mut i64, i: usize, n: usize, vals: &mut [usize], abc: &[i64]) {
+    if i == n {
+        let mut a = 0;
+        let mut b = 0;
+        let mut c = 0;
+        let mut mp = 0;
+        let mut cnt = vec![0i64; 4];
+        for i in 0..vals.len() {
+            let v = vals[i];
+            let l = ls[i];
 
-fn dfs(ls: &[i64], i: usize, a: i64, b: i64, c: i64, abc: &[i64]) -> i64 {
-    if i == ls.len() {
-        if min(a, min(b, c)) == 0 {
-            return INF;
+            if v != 0 {
+                cnt[v] += 1;
+            }
+            if v == 1 {
+                a += l;
+            }
+            if v == 2 {
+                b += l;
+            }
+            if v == 3 {
+                c += l;
+            }
         }
-        return (abc[0]-a).abs() + (abc[1]-b).abs() + (abc[2]-c).abs() - 30;
+        for i in 1..4 {
+            if cnt[i] == 0 {
+                return;
+            }
+            if cnt[i] >= 1 {
+                mp += (cnt[i]-1) * 10;
+            }
+        }
+        mp += (abc[0]-a as i64).abs();
+        mp += (abc[1]-b as i64).abs();
+        mp += (abc[2]-c as i64).abs();
+
+        if mp < *ans {
+            *ans = mp;
+        }
+        return;
     }
-    let ret1 = dfs(ls, i+1, a, b, c, abc);
-    let ret2 = dfs(ls, i+1, a+ls[i], b, c, abc) + 10;
-    let ret3 = dfs(ls, i+1, a, b+ls[i], c, abc) + 10;
-    let ret4 = dfs(ls, i+1, a, b, c+ls[i], abc) + 10;
-    min(ret1, min(min(ret2, ret3), ret4))
+
+    for j in 0..4 {
+        vals[i] = j;
+        search(ls, ans, i+1, n, vals, abc);
+        vals[i] = 0;
+    }
 }
 
 fn main() {
@@ -97,6 +130,8 @@ fn main() {
       c: i64,
       ls: [i64; n]
     }
-    let ans = dfs(&ls, 0, 0, 0, 0, &[a, b, c]);
+    let mut ans = 1 << 50;
+    let mut vals = vec![0; n];
+    search(&ls, &mut ans, 0, n, &mut vals, &[a, b, c]);
     println!("{}", ans);
 }
