@@ -80,11 +80,12 @@ fn main() {
     }
 
     let mut ans = 0.0;
-    for &(x, ref y) in xys.iter() {
-        if y == "JPY" {
-            ans += x;
+    for i in 0..n {
+        let xy = &xys[i];
+        if xy.1 == "JPY" {
+            ans += xy.0;
         } else {
-            ans += x * 380000.0;
+            ans += xy.0 * 380000.0;
         }
     }
     println!("{}", ans);
