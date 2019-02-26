@@ -62,7 +62,7 @@ macro_rules! debug {
 }
 
 #[allow(unused_imports)]
-use std::cmp::{min, max};
+use std::cmp::{max, min};
 
 fn main() {
     input!{
@@ -72,7 +72,7 @@ fn main() {
     }
     let mut sum = 0;
     for i in 1..n {
-        sum += min(ts[i] - ts[i-1], t)
+        sum += min(ts[i] - ts[i - 1], t)
     }
     println!("{}", sum + t);
 }

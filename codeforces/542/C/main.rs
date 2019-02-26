@@ -68,7 +68,7 @@ macro_rules! debug {
 }
 
 #[allow(unused_imports)]
-use std::cmp::{min, max};
+use std::cmp::{max, min};
 
 #[allow(unused_imports)]
 use std::io::Write;
@@ -76,16 +76,11 @@ use std::io::Write;
 fn dfs(map: &mut [Vec<char>], i: i64, j: i64, c: char) {
     map[i as usize][j as usize] = c;
 
-    let dirs = [
-        (1, 0),
-        (0, 1),
-        (-1, 0),
-        (0, -1),
-    ];
+    let dirs = [(1, 0), (0, 1), (-1, 0), (0, -1)];
     let n = map.len() as i64;
     for &(dx, dy) in dirs.iter() {
-        let nx = dx+i;
-        let ny = dy+j;
+        let nx = dx + i;
+        let ny = dy + j;
         if !(nx >= 0 && nx < n && ny >= 0 && ny < n) {
             continue;
         }
@@ -119,11 +114,11 @@ fn main() {
       mut c2: i64,
       mut map: [chars; n]
     }
-    dfs(&mut map, r1-1, c1-1, '2');
-    if map[r2 as usize -1][c2 as usize - 1] == '2' {
+    dfs(&mut map, r1 - 1, c1 - 1, '2');
+    if map[r2 as usize - 1][c2 as usize - 1] == '2' {
         return println!("{}", 0);
     }
-    dfs(&mut map, r2-1, c2-1, '3');
+    dfs(&mut map, r2 - 1, c2 - 1, '3');
 
     let mut ans = 1 << 30;
     for i in 0..n {
