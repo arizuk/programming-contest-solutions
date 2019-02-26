@@ -72,39 +72,43 @@ use std::cmp::{min, max};
 
 #[allow(unused_imports)]
 use std::io::Write;
-type I = usize;
+
 
 fn main() {
     input!{
-      n: I,
-      aa: [I; 2*n],
+      n: i64,
+      aa: [i64; n*2],
     }
+
     use std::collections::HashMap;
     let mut map = HashMap::new();
-    for i in 0..2*n {
-        let a = aa[i];
-        let e = map.entry(a).or_insert(vec![]);
-        e.push(i as i64);
+
+    for i in 0..(2*n) {
+        let a = aa[i as usize];
+        let e  = map.entry(a).or_insert(vec![]);
+        e.push(i);
     }
 
-    let mut p0 = 0;
-    let mut p1 = 0;
     let mut ans = 0;
+    let mut p1 = 0;
+    let mut p2 = 0;
 
-    for i in 0..n {
-        let xs = map.get(&(i+1)).unwrap();
-        let x1 = xs[0];
-        let x2 = xs[1];
-        let d1 = (p0 - x1).abs() + (p1 - x2).abs();
-        let d2 = (p0 - x2).abs() + (p1 - x1).abs();
-        if d1 <= d2 {
-            p0 = x1;
-            p1 = x2;
-            ans += d1;
-        } else {
-            p0 = x2;
+    for x in 1..n+1 {
+        let xs = map.get(&x).unwrap();
+
+        let x1 = xs[0] as i64;
+        let x2 = xs[1] as i64;
+
+        debug!(p1, p2, x1, x2);
+
+        if (x1-p1).abs() + (x2-p2).abs() <= (x1-p2).abs() + (x2-p1).abs() {
+            ans += (x1-p1).abs() + (x2-p2).abs();
             p1 = x1;
-            ans += d2;
+            p2 = x2;
+        } else {
+            ans += (x1-p2).abs() + (x2-p1).abs();
+            p1 = x2;
+            p2 = x1;
         }
     }
     println!("{}", ans);

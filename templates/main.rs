@@ -72,6 +72,7 @@ use std::cmp::{min, max};
 
 #[allow(unused_imports)]
 use std::io::Write;
+type I = usize;
 
 fn main() {
 }
