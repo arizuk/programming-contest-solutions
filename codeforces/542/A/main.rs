@@ -75,54 +75,25 @@ use std::io::Write;
 
 fn main() {
     input!{
-      a: i64,
-      b: i64,
-      q: usize,
-      mut ss: [i64; a],
-      mut ts: [i64; b],
-      xs: [i64; q],
+      n: usize,
+      aa: [i64; n]
     }
-    const INF: i64 = 1 << 50;
-    ss.push(INF);
-    ss.push(-INF);
-    ss.sort();
-    ts.push(INF);
-    ts.push(-INF);
-    ts.sort();
-
-    for i in 0..q {
-        let x = xs[i];
-        let s = ss.binary_search(&x);
-        let t = ts.binary_search(&x);
-        let s = match s {
-            Err(v) => v,
-            _ => unreachable!()
-        };
-        let t = match t {
-            Err(v) => v,
-            _ => unreachable!()
-        };
-
-        let mut ans = INF;
-
-        let d = max(ss[s], ts[t]) - x;
-        ans = min(d, ans);
-
-        let d = x-min(ss[s-1], ts[t-1]);
-        ans = min(d, ans);
-
-        let d = (ss[s]-x)*2 + x-ts[t-1];
-        ans = min(ans, d);
-
-        let d = (ss[s]-x) + (x-ts[t-1])*2;
-        ans = min(ans, d);
-
-        let d = (ts[t]-x)*2 + (x-ss[s-1]);
-        ans = min(ans, d);
-
-        let d = (ts[t]-x) + (x-ss[s-1])*2;
-        ans = min(ans, d);
-
-        println!("{}", ans);
+    let h = n/2 + n%2;
+    let mut pos = 0;
+    let mut neg = 0;
+    for i in 0..n {
+        if aa[i] > 0 {
+            pos += 1;
+        }
+        if aa[i] < 0 {
+            neg += 1;
+        }
+    }
+    if pos >= h {
+        println!("{}", 1);
+    } else if neg >= h {
+        println!("{}", -1);
+    } else {
+        println!("{}", 0);
     }
 }

@@ -73,56 +73,65 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
+fn dfs(map: &mut [Vec<char>], i: i64, j: i64, c: char) {
+    map[i as usize][j as usize] = c;
+
+    let dirs = [
+        (1, 0),
+        (0, 1),
+        (-1, 0),
+        (0, -1),
+    ];
+    let n = map.len() as i64;
+    for &(dx, dy) in dirs.iter() {
+        let nx = dx+i;
+        let ny = dy+j;
+        if !(nx >= 0 && nx < n && ny >= 0 && ny < n) {
+            continue;
+        }
+        if map[nx as usize][ny as usize] != '0' {
+            continue;
+        }
+        dfs(map, nx, ny, c);
+    }
+}
+
+fn find_smallest(map: &[Vec<char>], x: usize, y: usize) -> i64 {
+    let n = map.len();
+    let mut ans = 1 << 30;
+    for i in 0..n {
+        for j in 0..n {
+            if map[i][j] == '3' {
+                let d = (x as i64 - i as i64).pow(2) + (y as i64 - j as i64).pow(2);
+                ans = min(ans, d);
+            }
+        }
+    }
+    ans
+}
+
 fn main() {
     input!{
-      a: i64,
-      b: i64,
-      q: usize,
-      mut ss: [i64; a],
-      mut ts: [i64; b],
-      xs: [i64; q],
+      n: usize,
+      mut r1: i64,
+      mut c1: i64,
+      mut r2: i64,
+      mut c2: i64,
+      mut map: [chars; n]
     }
-    const INF: i64 = 1 << 50;
-    ss.push(INF);
-    ss.push(-INF);
-    ss.sort();
-    ts.push(INF);
-    ts.push(-INF);
-    ts.sort();
-
-    for i in 0..q {
-        let x = xs[i];
-        let s = ss.binary_search(&x);
-        let t = ts.binary_search(&x);
-        let s = match s {
-            Err(v) => v,
-            _ => unreachable!()
-        };
-        let t = match t {
-            Err(v) => v,
-            _ => unreachable!()
-        };
-
-        let mut ans = INF;
-
-        let d = max(ss[s], ts[t]) - x;
-        ans = min(d, ans);
-
-        let d = x-min(ss[s-1], ts[t-1]);
-        ans = min(d, ans);
-
-        let d = (ss[s]-x)*2 + x-ts[t-1];
-        ans = min(ans, d);
-
-        let d = (ss[s]-x) + (x-ts[t-1])*2;
-        ans = min(ans, d);
-
-        let d = (ts[t]-x)*2 + (x-ss[s-1]);
-        ans = min(ans, d);
-
-        let d = (ts[t]-x) + (x-ss[s-1])*2;
-        ans = min(ans, d);
-
-        println!("{}", ans);
+    dfs(&mut map, r1-1, c1-1, '2');
+    if map[r2 as usize -1][c2 as usize - 1] == '2' {
+        return println!("{}", 0);
     }
+    dfs(&mut map, r2-1, c2-1, '3');
+
+    let mut ans = 1 << 30;
+    for i in 0..n {
+        for j in 0..n {
+            if map[i][j] == '2' {
+                ans = min(ans, find_smallest(&map, i, j));
+            }
+        }
+    }
+    println!("{}", ans);
 }

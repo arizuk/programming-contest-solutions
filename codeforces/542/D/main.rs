@@ -73,56 +73,37 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
+fn dist(start_station: usize, station: usize, n: usize) -> usize {
+    let mut tmp = station;
+    if tmp < start_station {
+        tmp += n;
+    }
+    (tmp-start_station) as usize
+}
+
 fn main() {
     input!{
-      a: i64,
-      b: i64,
-      q: usize,
-      mut ss: [i64; a],
-      mut ts: [i64; b],
-      xs: [i64; q],
+      n: usize,
+      m: usize,
+      abs: [(usize, usize); m]
     }
-    const INF: i64 = 1 << 50;
-    ss.push(INF);
-    ss.push(-INF);
-    ss.sort();
-    ts.push(INF);
-    ts.push(-INF);
-    ts.sort();
+    let mut tbl = vec![vec![]; n];
 
-    for i in 0..q {
-        let x = xs[i];
-        let s = ss.binary_search(&x);
-        let t = ts.binary_search(&x);
-        let s = match s {
-            Err(v) => v,
-            _ => unreachable!()
-        };
-        let t = match t {
-            Err(v) => v,
-            _ => unreachable!()
-        };
-
-        let mut ans = INF;
-
-        let d = max(ss[s], ts[t]) - x;
-        ans = min(d, ans);
-
-        let d = x-min(ss[s-1], ts[t-1]);
-        ans = min(d, ans);
-
-        let d = (ss[s]-x)*2 + x-ts[t-1];
-        ans = min(ans, d);
-
-        let d = (ss[s]-x) + (x-ts[t-1])*2;
-        ans = min(ans, d);
-
-        let d = (ts[t]-x)*2 + (x-ss[s-1]);
-        ans = min(ans, d);
-
-        let d = (ts[t]-x) + (x-ss[s-1])*2;
-        ans = min(ans, d);
-
-        println!("{}", ans);
+    for i in 0..m {
+        let (a, b) = abs[i];
+        tbl[a-1].push(b-1);
     }
+    for start_station in 0..n {
+        let mut ans = 0;
+        for i in 0..n {
+            if tbl[i].len() > 0 {
+                let mut cur_dist = n * (tbl[i].len() - 1);
+                cur_dist += dist(start_station, i, n);
+                cur_dist += tbl[i].iter().map(|v| dist(i, *v, n)).min().unwrap();
+                ans = max(cur_dist, ans);
+            }
+        }
+        print!("{} ", ans);
+    }
+    println!();
 }

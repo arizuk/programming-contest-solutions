@@ -73,56 +73,43 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
+
 fn main() {
     input!{
-      a: i64,
-      b: i64,
-      q: usize,
-      mut ss: [i64; a],
-      mut ts: [i64; b],
-      xs: [i64; q],
+      n: i64,
+      aa: [i64; n*2],
     }
-    const INF: i64 = 1 << 50;
-    ss.push(INF);
-    ss.push(-INF);
-    ss.sort();
-    ts.push(INF);
-    ts.push(-INF);
-    ts.sort();
 
-    for i in 0..q {
-        let x = xs[i];
-        let s = ss.binary_search(&x);
-        let t = ts.binary_search(&x);
-        let s = match s {
-            Err(v) => v,
-            _ => unreachable!()
-        };
-        let t = match t {
-            Err(v) => v,
-            _ => unreachable!()
-        };
+    use std::collections::HashMap;
+    let mut map = HashMap::new();
 
-        let mut ans = INF;
-
-        let d = max(ss[s], ts[t]) - x;
-        ans = min(d, ans);
-
-        let d = x-min(ss[s-1], ts[t-1]);
-        ans = min(d, ans);
-
-        let d = (ss[s]-x)*2 + x-ts[t-1];
-        ans = min(ans, d);
-
-        let d = (ss[s]-x) + (x-ts[t-1])*2;
-        ans = min(ans, d);
-
-        let d = (ts[t]-x)*2 + (x-ss[s-1]);
-        ans = min(ans, d);
-
-        let d = (ts[t]-x) + (x-ss[s-1])*2;
-        ans = min(ans, d);
-
-        println!("{}", ans);
+    for i in 0..(2*n) {
+        let a = aa[i as usize];
+        let e  = map.entry(a).or_insert(vec![]);
+        e.push(i);
     }
+
+    let mut ans = 0;
+    let mut p1 = 0;
+    let mut p2 = 0;
+
+    for x in 1..n+1 {
+        let xs = map.get(&x).unwrap();
+
+        let x1 = xs[0] as i64;
+        let x2 = xs[1] as i64;
+
+        debug!(p1, p2, x1, x2);
+
+        if (x1-p1).abs() + (x2-p2).abs() <= (x1-p2).abs() + (x2-p1).abs() {
+            ans += (x1-p1).abs() + (x2-p2).abs();
+            p1 = x1;
+            p2 = x2;
+        } else {
+            ans += (x1-p2).abs() + (x2-p1).abs();
+            p1 = x2;
+            p2 = x1;
+        }
+    }
+    println!("{}", ans);
 }

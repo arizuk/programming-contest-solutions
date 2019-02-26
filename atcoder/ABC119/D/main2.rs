@@ -72,6 +72,47 @@ use std::cmp::{min, max};
 
 #[allow(unused_imports)]
 use std::io::Write;
+use std::cmp::Ordering;
+
+#[doc = " Equivalent to std::lowerbound and std::upperbound in c++"]
+pub trait BinarySearch<T> {
+    fn lower_bound(&self, &T) -> usize;
+    fn upper_bound(&self, &T) -> usize;
+}
+impl<T: Ord> BinarySearch<T> for [T] {
+    fn lower_bound(&self, x: &T) -> usize {
+        let mut low = 0;
+        let mut high = self.len();
+        while low != high {
+            let mid = (low + high) / 2;
+            match self[mid].cmp(x) {
+                Ordering::Less => {
+                    low = mid + 1;
+                }
+                Ordering::Equal | Ordering::Greater => {
+                    high = mid;
+                }
+            }
+        }
+        low
+    }
+    fn upper_bound(&self, x: &T) -> usize {
+        let mut low = 0;
+        let mut high = self.len();
+        while low != high {
+            let mid = (low + high) / 2;
+            match self[mid].cmp(x) {
+                Ordering::Less | Ordering::Equal => {
+                    low = mid + 1;
+                }
+                Ordering::Greater => {
+                    high = mid;
+                }
+            }
+        }
+        low
+    }
+}
 
 fn main() {
     input!{
@@ -82,46 +123,43 @@ fn main() {
       mut ts: [i64; b],
       xs: [i64; q],
     }
-    const INF: i64 = 1 << 50;
-    ss.push(INF);
-    ss.push(-INF);
     ss.sort();
-    ts.push(INF);
-    ts.push(-INF);
     ts.sort();
 
     for i in 0..q {
         let x = xs[i];
-        let s = ss.binary_search(&x);
-        let t = ts.binary_search(&x);
-        let s = match s {
-            Err(v) => v,
-            _ => unreachable!()
-        };
-        let t = match t {
-            Err(v) => v,
-            _ => unreachable!()
-        };
+        let s1 = ss.lower_bound(&x) as i64;
+        let t1 = ts.lower_bound(&x) as i64;
+        let s2 = s1-1;
+        let t2 = t1-1;
+        let mut ans = 1 << 60;
 
-        let mut ans = INF;
+        let get_s = |i| (ss[i as usize] - x).abs();
+        let get_t = |i| (ts[i as usize] - x).abs();
 
-        let d = max(ss[s], ts[t]) - x;
-        ans = min(d, ans);
+        if s1 <= a-1 && t1 <= b-1 {
+            ans = min(ans, max(get_s(s1), get_t(t1)));
+        }
 
-        let d = x-min(ss[s-1], ts[t-1]);
-        ans = min(d, ans);
+        if s2 >= 0 && t2 >= 0 {
+            ans = min(ans, max(get_s(s2), get_t(t2)));
+        }
 
-        let d = (ss[s]-x)*2 + x-ts[t-1];
-        ans = min(ans, d);
+        if s1 <= a-1 && t2 >= 0 {
+            let d = get_s(s1)*2 + get_t(t2);
+            ans = min(ans, d);
 
-        let d = (ss[s]-x) + (x-ts[t-1])*2;
-        ans = min(ans, d);
+            let d = get_s(s1) + get_t(t2)*2;
+            ans = min(ans, d);
+        }
 
-        let d = (ts[t]-x)*2 + (x-ss[s-1]);
-        ans = min(ans, d);
+        if s2 >= 0 && t1 <= b-1 {
+            let d = get_t(t1)*2 + get_s(s2);
+            ans = min(ans, d);
 
-        let d = (ts[t]-x) + (x-ss[s-1])*2;
-        ans = min(ans, d);
+            let d = get_t(t1) + get_s(s2)*2;
+            ans = min(ans, d);
+        }
 
         println!("{}", ans);
     }
