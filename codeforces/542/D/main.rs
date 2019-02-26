@@ -93,14 +93,23 @@ fn main() {
         let (a, b) = abs[i];
         tbl[a-1].push(b-1);
     }
+
+    let mut dist_tbl = vec![0; n];
+    for i in 0..n {
+        if tbl[i].len() > 0 {
+            let mut cur_dist = n * (tbl[i].len() - 1);
+            // cur_dist += dist(start_station, i, n);
+            cur_dist += tbl[i].iter().map(|v| dist(i, *v, n)).min().unwrap();
+            dist_tbl[i] = cur_dist;
+        }
+    }
+
     for start_station in 0..n {
         let mut ans = 0;
         for i in 0..n {
             if tbl[i].len() > 0 {
-                let mut cur_dist = n * (tbl[i].len() - 1);
-                cur_dist += dist(start_station, i, n);
-                cur_dist += tbl[i].iter().map(|v| dist(i, *v, n)).min().unwrap();
-                ans = max(cur_dist, ans);
+                let cur_dist = dist_tbl[i] + dist(start_station, i, n);
+                ans = max(ans, cur_dist);
             }
         }
         print!("{} ", ans);
