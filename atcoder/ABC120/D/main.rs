@@ -78,7 +78,6 @@ type I = usize;
 struct UnionFind {
     par: Vec<usize>,
     rank: Vec<usize>,
-    size: Vec<usize>,
 }
 
 impl UnionFind {
@@ -90,7 +89,6 @@ impl UnionFind {
         UnionFind {
             par: vec,
             rank: vec![0; n],
-            size: vec![1; n],
         }
     }
 
@@ -114,14 +112,8 @@ impl UnionFind {
         let bpar = self.find(b);
         if self.rank[apar] > self.rank[bpar] {
             self.par[bpar] = apar;
-            if apar != bpar {
-                self.size[apar] = self.size[bpar] + self.size[apar];
-            }
         } else {
             self.par[apar] = bpar;
-            if apar != bpar {
-                self.size[bpar] = self.size[bpar] + self.size[apar];
-            }
             if self.rank[apar] == self.rank[bpar] {
                 self.rank[bpar] += 1;
             }
@@ -136,21 +128,20 @@ fn main() {
       mut abs: [(usize, usize); m],
     }
     abs.reverse();
-
     let mut uf = UnionFind::new(n + 1);
-    let mut point = n * (n - 1) / 2;
+    let mut dpairs = n * (n - 1) / 2;
+    let mut sizes = vec![1; n + 1];
     let mut ans = vec![];
-    ans.push(point);
-    for i in 0..m - 1 {
+    for i in 0..m {
+        ans.push(dpairs);
         let (a, b) = abs[i];
         if !uf.same(a, b) {
-            let ra = uf.find(a);
-            let rb = uf.find(b);
-            // debug!(ra, rb, uf.size[ra]);
-            point -= uf.size[ra] * uf.size[rb];
+            let sa = sizes[uf.find(a)];
+            let sb = sizes[uf.find(b)];
+            uf.unite(a, b);
+            dpairs -= sa * sb;
+            sizes[uf.find(a)] = sa + sb;
         }
-        uf.unite(a, b);
-        ans.push(point);
     }
     ans.reverse();
     for a in ans {
