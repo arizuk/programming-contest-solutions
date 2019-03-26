@@ -1,16 +1,16 @@
 // [l, r]
-fn binary_search<F>(mut l: i64, mut r: i64, f: &F) -> Option<i64>
-  where F: Fn(i64) -> bool
+fn binary_search<F>(mut l: usize, mut r: usize, f: &F) -> Option<usize>
+  where F: Fn(usize) -> bool
   {
     assert!(l <= r);
-    l -= 1;
     r += 1;
     let r_bound = r;
-    while r - l > 1 {
+    while r > l {
         let m = l + (r - l) / 2;  // avoid overflow
         if f(m) {
           r = m;
         } else {
+          if l == m { break; }
           l = m;
         }
     }
@@ -29,4 +29,10 @@ fn main() {
 
   let ans = binary_search(1, 31, &f);
   assert_eq!(None, ans);
+
+  let ans = binary_search(32, 100, &f);
+  assert_eq!(Some(32), ans);
+
+  let ans = binary_search(33, 100, &f);
+  assert_eq!(Some(33), ans);
 }
