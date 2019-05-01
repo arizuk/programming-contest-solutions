@@ -81,21 +81,37 @@ fn solve() {
       k: usize,
       aa: [i64; n],
     }
-    let mut dp = vec![vec![-1; m+1]; n+1];
-    dp[0][0] = 0;
+    let mut dp = vec![vec![vec![-1; k+1]; m+2]; 2];
+    dp[0][0][0] = 0;
 
     for i in 0..n {
-        for m in 0..m {
+        let cur = i%2;
+        let next = 1-cur;
+
+        for m in 0..m+1 {
             for k in 0..k {
-                if dp[i][m] >= 0 && i+k<n {
-                    dp[i+k+1][m+1] = max(dp[i+k+1][m+1], dp[i][m] + aa[i+k]);
+                if dp[cur][m][k] >= 0 {
+                    dp[next][m+1][0] = max(dp[cur][m][k] + aa[i], dp[next][m+1][0]);
+                    dp[next][m][k+1] = dp[cur][m][k];
                 }
+            }
+            // debug!(i, m, dp[i][m]);
+        }
+
+        for m in 0..m+2 {
+            for k in 0..k {
+                dp[cur][m][k] = -1;
             }
         }
     }
+
+    // for m in 0..m+1 {
+    //     debug!(n, m, dp[n][m]);
+    // }
+
     let mut ans = -1;
     for i in 0..k {
-        ans = max(ans, dp[n-i][m]);
+        ans = max(dp[n%2][m][i], ans);
     }
     println!("{}", ans);
 }
