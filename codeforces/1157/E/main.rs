@@ -96,39 +96,33 @@ fn main() {
       bb: [usize; n],
     }
 
-    let mut heap = std::collections::BinaryHeap::new();
-    let mut map = std::collections::HashMap::new();
-    for b in bb {
-        let e = map.entry(b).or_insert(0);
-        *e += 1;
-        heap.push(Rev(b));
-    }
+    use std::collections::BTreeMap;
+    let mut map = BTreeMap::new();
 
-    debug!(map);
+    for b in bb {
+        *map.entry(b).or_insert(0) += 1;
+    }
 
     for i in 0..n {
-        let add = n - aa[i];
-        if let Some(&num) = map.get(&add) {
-            if num > 0 {
-                let e = map.entry(add).or_insert(0);
-                *e -= 1;
-                print!("{} ", 0);
-                continue;
-            }
-            debug!(map);
-        }
+        let a = aa[i];
+        let delta = n-a;
 
-        loop {
-            let num = heap.pop().unwrap().0;
-            // debug!("poped", num);
-            let e = map.entry(num).or_insert(0);
-            if *e == 0 {
-                continue;
+        let update = |key, value, map: &mut BTreeMap<usize, usize>| {
+            print!("{} ", (a+key)%n);
+            if value == 1 {
+                map.remove(&key);
+            } else {
+                map.entry(key).and_modify(|e| *e-=1);
             }
-            *e -= 1;
-            print!("{} ", num+aa[i]);
-            break;
+        };
+
+        if let Some((&key, &value)) = map.range(delta..).next() {
+            update(key, value, &mut map);
+            continue;
         }
-        debug!(map);
+        if let Some((&key, &value)) = map.range(0..).next() {
+            update(key, value, &mut map);
+        }
     }
+    println!();
 }
