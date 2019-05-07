@@ -73,24 +73,17 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-struct Solver {
-    edges: Vec<Vec<usize>>
-}
-
-impl Solver {
-
-    fn dfs(&self, cur: usize, parent: usize, depth: usize) -> (usize, usize) {
-        let mut ret = (depth, cur);
-        for &next in self.edges[cur].iter() {
-            if next != parent {
-                let next_ret = self.dfs(next, cur, depth+1);
-                if next_ret > ret {
-                    ret = next_ret
-                }
+fn dfs(i: usize, prev: usize, edges: &Vec<Vec<usize>>, d: usize) -> (usize, usize) {
+    let mut ret = (d, i);
+    for &next in edges[i].iter() {
+        if next != prev {
+            let next_ret = dfs(next, i, edges, d+1);
+            if next_ret > ret {
+                ret = next_ret
             }
         }
-        ret
     }
+    ret
 }
 
 fn main() {
@@ -104,11 +97,10 @@ fn main() {
         edges[a-1].push(b-1);
         edges[b-1].push(a-1);
     }
-    let g = Solver { edges: edges };
 
     // 木の直径(diameter)を求める
-    let (_, n1) = g.dfs(0, n, 0);
-    let (diameter, _) = g.dfs(n1, n, 0);
+    let (_, n1) = dfs(0, n, &edges, 0);
+    let (diameter, _) = dfs(n1, n, &edges, 0);
     if (diameter+1)%3 == 2 {
         println!("Second");
     } else {
