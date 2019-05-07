@@ -50,8 +50,8 @@ macro_rules! read_value {
         read_value!($next, String).chars().collect::<Vec<char>>()
     };
 
-    ($next:expr, usize1) => {
-        read_value!($next, usize) - 1
+    ($next:expr, isize1) => {
+        read_value!($next, isize) - 1
     };
 
     ($next:expr, $t:ty) => {
@@ -72,77 +72,56 @@ use std::cmp::{min, max};
 
 #[allow(unused_imports)]
 use std::io::Write;
-type I = usize;
-
-fn can_block(dir: usize, h: isize, w: isize, mut x: isize, mut y: isize, ss: &Vec<char>, ts: &Vec<char>) -> bool {
-    // debug!(dir, h, w, x, y);
-    let n = ss.len();
-    for i in 0..n {
-        match dir {
-            0 => {
-                if ss[i] == 'U' { x -=1; }
-                if ss[i] == 'R' { y +=1; }
-            },
-            1 => {
-                if ss[i] == 'D' { x +=1; }
-                if ss[i] == 'R' { y +=1; }
-            },
-            2 => {
-                if ss[i] == 'D' { x +=1; }
-                if ss[i] == 'L' { y -=1; }
-            },
-            3 => {
-                if ss[i] == 'U' { x -=1; }
-                if ss[i] == 'L' { y -=1; }
-            },
-            _ => unreachable!()
-        };
-        if !(x>=0 && x<h && y>=0 && y < w) {
-            return false
-        }
-
-        match dir {
-            0 => {
-                if ts[i] == 'D' { x = min(x+1, h-1); }
-                if ts[i] == 'L' { y = max(y-1, 0); }
-            },
-            1 => {
-                if ts[i] == 'U' { x = max(x-1, 0); }
-                if ts[i] == 'L' { y = max(y-1, 0); }
-            },
-            2 => {
-                if ts[i] == 'U' { x = max(x-1, 0); }
-                if ts[i] == 'R' { y = min(y+1, w-1); }
-            },
-            3 => {
-                if ts[i] == 'D' { x = min(x+1, h-1); }
-                if ts[i] == 'R' { y = min(y+1, w-1); }
-            },
-            _ => unreachable!()
-        };
-
-        if !(x>=0 && x<h && y>=0 && y < w) {
-            return false
-        }
-    }
-    true
-}
 
 fn main() {
     input!{
-      h: usize,
-      w: usize,
+      h: isize,
+      w: isize,
       n: usize,
-      sr: isize,
-      sc: isize,
+      sr: isize1,
+      sc: isize1,
       ss: chars,
       ts: chars,
     }
 
-    for i in 0..4 {
-        if !can_block(i, h as _, w as _, sr-1, sc-1, &ss, &ts) {
+    let mut left = 0;
+    let mut right = w-1;
+    let mut top = 0;
+    let mut buttom = h-1;
+
+    for i in (0..n).rev() {
+        let s = ss[i];
+        let t = ts[i];
+
+        if i != n-1 {
+            match t {
+                'U' => buttom = min(buttom+1, h-1),
+                'D' => top = max(top-1, 0),
+                'R' => left = max(left-1, 0),
+                'L' => right = min(right+1, w-1),
+                _ => unreachable!()
+            }
+        }
+
+        match s {
+            'U' => top = top+1,
+            'D' => buttom = buttom-1,
+            'R' => right = right-1,
+            'L' => left = left+1,
+            _ => unreachable!()
+        }
+
+        if top >= h || buttom < 0 || left >= w || right < 0 {
+            return println!("{}", "NO");
+        }
+        if top > buttom || left > right {
             return println!("{}", "NO");
         }
     }
-    println!("{}", "YES")
+
+    if sr >= top && sr <= buttom && sc >= left && sc <= right {
+        println!("{}", "YES")
+    } else {
+        println!("{}", "NO")
+    }
 }
