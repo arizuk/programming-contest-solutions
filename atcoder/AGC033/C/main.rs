@@ -72,47 +72,19 @@ use std::cmp::{min, max};
 
 #[allow(unused_imports)]
 use std::io::Write;
-type I = usize;
 
-use std::collections::VecDeque;
-
-fn dfs(i: usize, prev: usize, edges: &Vec<Vec<usize>>, lg: &mut Vec<usize>) -> usize {
-    let mut longest = 0;
+fn dfs(i: usize, prev: usize, edges: &Vec<Vec<usize>>, d: usize) -> (usize, usize) {
+    let mut ret = (d, i);
     for &next in edges[i].iter() {
         if next != prev {
-            longest = max(longest, dfs(next, i, edges, lg));
+            let next_ret = dfs(next, i, edges, d+1);
+            if next_ret > ret {
+                ret = next_ret
+            }
         }
     }
-    lg[i] = longest + 1;
-    return lg[i]
+    ret
 }
-
-fn long(i: usize, prev: usize, edges: &Vec<Vec<usize>>, lg: &Vec<usize>, ans: &mut usize) {
-    let mut temps = vec![];
-    for &next in edges[i].iter() {
-        if next != prev {
-            temps.push(lg[next]);
-        }
-    }
-    temps.sort();
-    temps.reverse();
-    let mut temp = 0;
-
-    if temps.len() > 0 {
-        temp += temps[0];
-    }
-    if temps.len() > 1 {
-        temp += temps[1];
-    }
-    *ans = max(*ans, temp+1);
-
-    for &next in edges[i].iter() {
-        if next != prev {
-            long(next, i, edges, lg, ans);
-        }
-    }
-}
-
 
 fn main() {
     input!{
@@ -121,30 +93,17 @@ fn main() {
     }
 
     let mut edges = vec![vec![]; n];
-    let mut longest = vec![0; n];
     for &(a, b) in abs.iter() {
         edges[a-1].push(b-1);
         edges[b-1].push(a-1);
     }
-    dfs(0, n, &edges, &mut longest);
-    let mut ans = 0;
-    long(0, n, &edges, &longest, &mut ans);
 
-    let mut dp = vec![false; max(5, n+1)];
-    dp[1] = true;
-    dp[2] = false;
-    dp[3] = true;
-    dp[4] = true;
-    for i in 5..n+1 {
-        if dp[i-1] && dp[i-2] {
-            dp[i] = false;
-        } else {
-            dp[i] = true;
-        }
-    }
-    if dp[ans] {
-        println!("{}", "First");
+    // 木の直径(diameter)を求める
+    let (_, n1) = dfs(0, n, &edges, 0);
+    let (diameter, _) = dfs(n1, n, &edges, 0);
+    if (diameter+1)%3 == 2 {
+        println!("Second");
     } else {
-        println!("{}", "Second");
+        println!("First");
     }
 }
