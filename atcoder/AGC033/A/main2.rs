@@ -73,77 +73,45 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 use std::collections::VecDeque;
-
-#[derive(Debug)]
-struct Point {
-    x: i64,
-    y: i64,
-}
-
-impl Point {
-    fn new(dx: i64, dy: i64) -> Self {
-        Point { x: dx, y: dy }
-    }
-
-    fn add(&self, other: &Point) -> Point {
-        Point::new(self.x + other.x, self.y + other.y)
-    }
-
-    fn as_usize_tuple(&self) -> (usize, usize) {
-        (self.x as usize, self.y as usize)
-    }
-}
-
-#[derive(Debug)]
-struct Grid {
-    h: usize,
-    w: usize
-}
-
-impl Grid {
-    fn is_inside(&self, p: &Point) -> bool {
-        p.x >= 0 && p.x < self.h as i64 && p.y >= 0 && p.y < self.w as i64
-    }
-}
-
-type Delta = Point;
-
-const MOVES: [Delta; 4] = [
-    Delta { x: 1, y: 0 },
-    Delta { x: -1, y: 0 },
-    Delta { x: 0, y: 1 },
-    Delta { x: 0, y: -1 },
-];
+type I = usize;
 
 fn main() {
     input!{
       h: usize,
       w: usize,
-      mut ss: [chars; h]
+      mut aa: [chars; h]
     }
     let mut q = VecDeque::new();
 
     for i in 0..h {
         for j in 0..w {
-            if ss[i][j] == '#' {
-                q.push_back((Point::new(i as _,j as _), 1));
+            if aa[i][j] == '#' {
+                q.push_back((i, j, 1));
             }
         }
     }
 
-    let grid = Grid { h: h, w: w };
     let mut ans = 0;
-    while let Some((p, d)) = q.pop_front() {
-        for delta in MOVES.iter() {
-            let np = p.add(delta);
-            if !grid.is_inside(&np) {
+    while q.len() > 0 {
+        let (i, j, d) = q.pop_front().unwrap();
+        let dirs = [
+            (1, 0),
+            (-1, 0),
+            (0, 1),
+            (0, -1),
+        ];
+        for &(dx, dy) in dirs.iter() {
+            let x = (i as i64) + dx;
+            let y = (j as i64) + dy;
+            if !(x >= 0 && x < h as i64 && y >= 0 && y < w as i64) {
                 continue;
             }
-            let (nx, ny) = np.as_usize_tuple();
-            if ss[nx][ny] == '.' {
-                ss[nx][ny] = '#';
+            let x = x as usize;
+            let y = y as usize;
+            if aa[x][y] == '.' {
+                aa[x][y] = '#';
+                q.push_back((x, y, d+1));
                 ans = max(ans, d);
-                q.push_back((np, d+1));
             }
         }
     }
