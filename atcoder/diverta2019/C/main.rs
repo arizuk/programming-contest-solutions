@@ -72,25 +72,26 @@ use std::cmp::{min, max};
 
 #[allow(unused_imports)]
 use std::io::Write;
-type I = usize;
 
 fn main() {
     input!{
       n: usize,
       ss: [chars; n],
     }
-    let mut abs = vec![0; 3];
+    let mut a = 0;
+    let mut b = 0;
+    let mut ba = 0;
     let mut ans = 0;
     for i in 0..n {
         let s = &ss[i];
         let nn = s.len() - 1;
 
         if s[0] == 'B' && s[nn] == 'A' {
-            abs[2] += 1;
+            ba += 1;
         } else if s[0] == 'B' {
-            abs[1] += 1;
+            b += 1;
         } else if s[nn] == 'A' {
-            abs[0] += 1;
+            a += 1;
         }
 
         for i in 1..s.len() {
@@ -99,16 +100,14 @@ fn main() {
             }
         }
     }
-    debug!(abs, ans);
-    if abs[2] > 1 {
-        ans += abs[2]-1;
-        abs[2] = 1;
-    }
-    if abs[2] == 1 {
-        if abs[0] > 0 || abs[1] > 0 {
-            ans += 1;
+    ans += min(a, b);
+
+    if ba > 0 {
+        if a + b == 0 {
+            ans += ba - 1;
+        } else {
+            ans += ba;
         }
     }
-    ans += min(abs[0], abs[1]);
     println!("{}", ans);
 }
