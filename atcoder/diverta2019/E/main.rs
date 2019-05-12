@@ -78,4 +78,44 @@ fn main() {
       n: usize,
       aa: [usize; n],
     }
+    let mut acm = vec![0; n+1];
+    for i in 0..n {
+        acm[i+1] = acm[i] ^ aa[i];
+    }
+
+    const SZ: usize = 1 << 20;
+    let mut dp0 = vec![1; SZ];
+    let mut dp1 = vec![0; SZ];
+    let mut cnt = vec![0; SZ];
+
+    const MOD: usize = 1e9 as usize + 7;
+
+    let mut z = 0;
+    for i in 1..n+1 {
+        let a = acm[i];
+        if a == 0 {
+            z += 1;
+        } else {
+            let p0 = dp0[a];
+            let p1 = dp1[a];
+            dp0[a] = (p0 + (p1 * ((z - cnt[a]) % MOD))) % MOD;
+            dp1[a] = (dp0[a] + p1) % MOD;
+            cnt[a] = z;
+        }
+    }
+
+    if acm[n] == 0 {
+        let mut ans = 1;
+        for _ in 0..z-1  {
+            ans *= 2;
+            ans %= MOD;
+        }
+        for i in 0..dp1.len() {
+            ans += dp1[i];
+            ans %= MOD;
+        }
+        println!("{}", ans);
+    } else {
+        println!("{}", dp0[acm[n]]);
+    }
 }
