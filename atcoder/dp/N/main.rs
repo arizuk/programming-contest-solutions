@@ -74,4 +74,32 @@ use std::cmp::{min, max};
 use std::io::Write;
 
 fn main() {
+    input!{
+      n: usize,
+      aa: [usize; n],
+    }
+    let mut acm = vec![0; n+1];
+    for i in 0..n {
+        acm[i+1] = acm[i] + aa[i];
+    }
+
+    const INF: usize = 1 << 60;
+
+    let mut dp = vec![vec![INF; n]; n];
+    for w in 1..n+1 {
+        for l in 0..n {
+            let r = l+w-1;
+            if r >= n { break; }
+            if l == r{
+                dp[l][r] = 0;
+                continue;
+            }
+
+            for pos in l..r {
+                // [l,pos] | (pos, r] に分割
+                dp[l][r] = min(dp[l][r], dp[l][pos] + dp[pos+1][r] + acm[r+1] - acm[l]);
+            }
+        }
+    }
+    println!("{}", dp[0][n-1]);
 }
