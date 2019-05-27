@@ -5,13 +5,12 @@ fn binary_search<F>(mut l: usize, mut r: usize, f: &F) -> Option<usize>
     assert!(l <= r);
     r += 1;
     let r_bound = r;
-    while r > l {
+    while r != l {
         let m = l + (r - l) / 2;  // avoid overflow
         if f(m) {
           r = m;
         } else {
-          if l == m { break; }
-          l = m;
+          l = m + 1;
         }
     }
     if r == r_bound { None } else { Some(r) }
