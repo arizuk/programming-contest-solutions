@@ -88,22 +88,16 @@ fn main() {
     }
     ps.sort();
     ps.dedup();
-    let mut map = std::collections::HashMap::new();
-    for i in 0..ps.len() {
-        map.insert(ps[i], i);
-    }
 
     use ds::SegmentTree;
-    let f = |(a1,b1), (a2,b2)| {
-        (a1 * a2, b1 * a2  + b2)
-    };
+    let f = |(a1,b1), (a2,b2)| (a1 * a2, b1 * a2  + b2);
     let mut seg = SegmentTree::new(ps.len(), (1.0, 0.0), f);
 
     let mut min_value = 1.0;
     let mut max_value = 1.0;
 
     for (p, a, b) in pabs {
-        let i = map[&p];
+        let i = ps.binary_search(&p).unwrap();
         seg.update(i, (a,b));
         let (a, b) = seg.query(0, n);
         let value = a + b;
