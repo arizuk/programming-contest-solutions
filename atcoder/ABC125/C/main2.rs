@@ -85,74 +85,32 @@ pub fn lcm(a: u64, b: u64) -> u64 {
     a / gcd(a, b) * b
 }
 
-pub mod ds {
-    pub struct SegmentTree<T, F> {
-        n: usize,
-        pub data: Vec<T>,
-        init: T,
-        f: F,
-    }
-    impl<T, F> SegmentTree<T, F>
-    where
-        T: Copy,
-        F: Fn(T, T) -> T,
-    {
-        pub fn new(size: usize, init: T, f: F) -> Self {
-            let mut n = 1;
-            while n < size {
-                n *= 2;
-            }
-            SegmentTree {
-                n: n,
-                init: init,
-                f: f,
-                data: vec![init; n * 2 - 1],
-            }
-        }
-        pub fn update(&mut self, mut k: usize, x: T) {
-            k += self.n - 1;
-            self.data[k] = x;
-            while k > 0 {
-                k = (k - 1) / 2;
-                self.data[k] = (self.f)(self.data[k*2+1], self.data[k*2+2]);
-            }
-        }
-        #[doc = " [l, r)"]
-        pub fn query(&self, l: usize, r: usize) -> T {
-            assert!(l < r);
-            self.do_query(l, r, 0, 0, self.n)
-        }
-        fn do_query(&self, l: usize, r: usize, k: usize, a: usize, b: usize) -> T {
-            if b <= l || r <= a {
-                self.init
-            } else if l <= a && b <= r {
-                self.data[k]
-            } else {
-                let q1 = self.do_query(l, r, k * 2 + 1, a, (a + b) / 2);
-                let q2 = self.do_query(l, r, k * 2 + 2, (a + b) / 2, b);
-                (self.f)(q1, q2)
-            }
-        }
-    }
-}
-
-
 fn main() {
     input!{
       n: usize,
       aa: [u64; n],
     }
 
-    use ds::SegmentTree;
-    let mut seg = SegmentTree::new(n, 0, |a, b| gcd(a, b));
+    let mut lgcd = vec![0; n];
+    let mut rgcd = vec![0; n];
+
+    let mut g = aa[0];
     for i in 0..n {
-        seg.update(i, aa[i]);
+        g = gcd(aa[i], g);
+        lgcd[i] = g;
     }
-    let mut ans = max(seg.query(1, n), seg.query(0,n-1));
+
+    let mut g = aa[n-1];
+    for i in (0..n).rev() {
+        g = gcd(aa[i], g);
+        rgcd[i] = g;
+    }
+
+    let mut ans = max(rgcd[1], lgcd[n-2]);
     for i in 1..n-1 {
-        let q1 = seg.query(0, i);
-        let q2 = seg.query(i+1, n);
-        ans = max(ans, gcd(q1,q2));
+        let l = lgcd[i-1];
+        let r = rgcd[i+1];
+        ans = max(ans, gcd(l, r));
     }
     println!("{}", ans);
 }
