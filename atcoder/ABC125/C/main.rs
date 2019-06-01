@@ -136,7 +136,6 @@ pub mod ds {
     }
 }
 
-
 fn main() {
     input!{
       n: usize,

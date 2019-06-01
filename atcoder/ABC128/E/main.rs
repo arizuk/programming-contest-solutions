@@ -73,6 +73,89 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
+pub mod ds {
+    pub struct LazySegmentTree<T, F> {
+        n: usize,
+        init: T,
+        f: F,
+        pub data: Vec<T>,
+        pub lazy: Vec<Option<T>>,
+    }
+    impl<T, F> LazySegmentTree<T, F>
+    where
+        T: Copy,
+        F: Fn(T, T) -> T,
+    {
+        pub fn new(size: usize, init: T, f: F) -> Self {
+            let mut n = 1;
+            while n < size {
+                n *= 2;
+            }
+            LazySegmentTree {
+                n: n,
+                init: init,
+                f: f,
+                data: vec![init; n * 2 - 1],
+                lazy: vec![None; n * 2 - 1],
+            }
+        }
+        pub fn range_update(&mut self, l: usize, r: usize, x: T) {
+            let n = self.n;
+            self.do_range_update(l, r, x, 0, 0, n);
+        }
+        fn do_range_update(&mut self, l: usize, r: usize, x: T, k: usize, a: usize, b: usize) {
+            self.propagate(k);
+            if b <= l || r <= a {
+            } else if l <= a && b <= r {
+                self.lazy[k] = Some(x);
+                self.propagate(k);
+            } else {
+                self.do_range_update(l, r, x, k * 2 + 1, a, (a + b) / 2);
+                self.do_range_update(l, r, x, k * 2 + 2, (a + b) / 2, b);
+                self.data[k] = (self.f)(self.data[k * 2 + 1], self.data[k * 2 + 2]);
+            }
+        }
+        fn propagate(&mut self, k: usize) {
+            if let Some(x) = self.lazy[k] {
+                if k < self.n - 1 {
+                    if let Some(y) = self.lazy[k * 2 + 1] {
+                        self.lazy[k * 2 + 1] = Some((self.f)(x, y));
+                    } else {
+                        self.lazy[k * 2 + 1] = Some(x);
+                    }
+
+                    if let Some(y) = self.lazy[k * 2 + 2] {
+                        self.lazy[k * 2 + 2] = Some((self.f)(x, y));
+                    } else {
+                        self.lazy[k * 2 + 2] = Some(x);
+                    }
+                }
+                self.data[k] = (self.f)(self.data[k], x);
+                self.lazy[k] = None;
+            }
+        }
+        #[doc = " [l, r)"]
+        pub fn query(&mut self, l: usize, r: usize) -> T {
+            assert!(l < r);
+            let n = self.n;
+            self.do_query(l, r, 0, 0, n)
+        }
+        fn do_query(&mut self, l: usize, r: usize, k: usize, a: usize, b: usize) -> T {
+            self.propagate(k);
+            if b <= l || r <= a {
+                self.init
+            } else if l <= a && b <= r {
+                self.data[k]
+            } else {
+                let q1 = self.do_query(l, r, k * 2 + 1, a, (a + b) / 2);
+                let q2 = self.do_query(l, r, k * 2 + 2, (a + b) / 2, b);
+                (self.f)(q1, q2)
+            }
+        }
+    }
+}
+
+
 fn main() {
     input!{
       n: usize,
@@ -80,33 +163,38 @@ fn main() {
       stxs: [(i64,i64,i64);n],
       ds: [i64; q]
     }
+    use ds::LazySegmentTree;
+
     let mut ts = vec![];
     for &(s, t, x) in stxs.iter() {
         let l = s-x;
         let r = t-x;
-        ts.push((l, r, x));
+        ts.push(l);
+        ts.push(r);
     }
-    ts.sort_by_key(|v| v.0);
+    for &d in ds.iter() {
+        ts.push(d);
+    }
+    ts.sort();
+    ts.dedup();
 
-    let mut cur = 0;
-    let mut q = std::collections::BinaryHeap::new();
+    const MAX: i64 = 1 << 60;
+    let mut seg = LazySegmentTree::new(ts.len(), MAX, |a,b| min(a,b));
+    for &(s, t, x) in stxs.iter() {
+        let l = ts.binary_search(&(s-x)).unwrap();
+        let r = ts.binary_search(&(t-x)).unwrap();
+        seg.range_update(l, r, x);
+    }
+    // debug!(ts);
+    // debug!(seg.data, seg.lazy);
+
     for d in ds {
-        while cur < n && ts[cur].0 <= d {
-            let t = ts[cur];
-            cur += 1;
-            q.push((-1 * t.2, t.1));
-        }
-
-        while let Some(t) = q.pop() {
-            if d < t.1 {
-                q.push(t);
-                break;
-            }
-        }
-
-        match q.peek() {
-            Some(t) => println!("{}", -1 * t.0),
-            None => println!("{}", -1)
+        let l = ts.binary_search(&d).unwrap();
+        let x = seg.query(l, l+1);
+        if x == MAX {
+            println!("{}", -1);
+        } else {
+            println!("{}", x);
         }
     }
 }

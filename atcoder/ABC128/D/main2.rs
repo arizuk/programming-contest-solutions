@@ -72,32 +72,23 @@ use std::cmp::{min, max};
 
 #[allow(unused_imports)]
 use std::io::Write;
+use std::cmp::Ordering;
 
-const INF: i64 = -1 * (1 << 60);
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+struct Rev(i64);
 
-fn dp(vs: &Vec<i64>, memo: &mut Vec<Vec<Vec<Option<i64>>>>, l: usize, r: usize, k: i64) -> i64 {
-    if k < 0 || l > r {
-        return INF
+impl Ord for Rev {
+    fn cmp(&self, other: &Rev) -> Ordering {
+        other.0.cmp(&self.0)
     }
-    if k == 0 {
-        return 0;
-    }
-    if l == r {
-        return max(0, vs[l])
-    }
-
-    if let Some(v) = memo[l][r][k as usize] {
-        return v
-    }
-    let l1 = dp(vs, memo, l+1, r, k-1) + vs[l];
-    let l2 = dp(vs, memo, l+1, r, k-2);
-    let r1 = dp(vs, memo, l, r-1, k-1) + vs[r];
-    let r2 = dp(vs, memo, l, r-1, k-2);
-
-    let k = k as usize;
-    memo[l][r][k] = Some(max(max(l1, max(max(l2, r1), r2)), 0));
-    memo[l][r][k].unwrap()
 }
+
+impl PartialOrd for Rev {
+    fn partial_cmp(&self, other: &Rev) -> Option<Ordering> {
+        Some(other.0.cmp(&self.0))
+    }
+}
+
 
 fn main() {
     input!{
@@ -105,7 +96,48 @@ fn main() {
       k: usize,
       vs: [i64; n],
     }
-    let mut memo = vec![vec![vec![None; k+1]; n]; n];
-    let ans = dp(&vs, &mut memo, 0, n-1, k as _);
+    use std::collections::BinaryHeap;
+
+    let mut rev = vs.clone();
+    rev.reverse();
+    let mut ans = 1 << 32;
+    ans = ans as i64 * -1;
+    for l in 0..n+1 {
+        for r in 0..n+1 {
+            if l+r > n {
+                continue;
+            }
+            if l+r > k {
+                continue;
+            }
+
+            let mut q = BinaryHeap::new();
+            for i in 0..l {
+                q.push(Rev(vs[i]));
+            }
+            for i in 0..r {
+                q.push(Rev(rev[i]));
+            }
+
+            let mut rem = k - l - r;
+            while rem > 0 {
+                if let Some(Rev(v)) = q.pop() {
+                    if v > 0 {
+                        q.push(Rev(v));
+                        break;
+                    } else {
+                        rem -= 1;
+                    }
+                } else {
+                    break;
+                }
+            }
+            let mut sum = 0;
+            for Rev(v) in q.into_iter() {
+                sum += v;
+            }
+            ans = max(ans, sum);
+        }
+    }
     println!("{}", ans);
 }

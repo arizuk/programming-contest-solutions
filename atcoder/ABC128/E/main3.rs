@@ -73,39 +73,40 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-const INF: i64 = -1 * (1 << 60);
-
-fn dp(vs: &Vec<i64>, memo: &mut Vec<Vec<Vec<Option<i64>>>>, l: usize, r: usize, k: i64) -> i64 {
-    if k < 0 || l > r {
-        return INF
-    }
-    if k == 0 {
-        return 0;
-    }
-    if l == r {
-        return max(0, vs[l])
-    }
-
-    if let Some(v) = memo[l][r][k as usize] {
-        return v
-    }
-    let l1 = dp(vs, memo, l+1, r, k-1) + vs[l];
-    let l2 = dp(vs, memo, l+1, r, k-2);
-    let r1 = dp(vs, memo, l, r-1, k-1) + vs[r];
-    let r2 = dp(vs, memo, l, r-1, k-2);
-
-    let k = k as usize;
-    memo[l][r][k] = Some(max(max(l1, max(max(l2, r1), r2)), 0));
-    memo[l][r][k].unwrap()
-}
-
 fn main() {
     input!{
       n: usize,
-      k: usize,
-      vs: [i64; n],
+      q: usize,
+      stxs: [(i64,i64,i64);n],
+      ds: [i64; q]
     }
-    let mut memo = vec![vec![vec![None; k+1]; n]; n];
-    let ans = dp(&vs, &mut memo, 0, n-1, k as _);
-    println!("{}", ans);
+    let mut ts = vec![];
+    for &(s, t, x) in stxs.iter() {
+        let l = s-x;
+        let r = t-x;
+        ts.push((l, r, x));
+    }
+    ts.sort_by_key(|v| v.0);
+
+    let mut cur = 0;
+    let mut q = std::collections::BinaryHeap::new();
+    for d in ds {
+        while cur < n && ts[cur].0 <= d {
+            let t = ts[cur];
+            cur += 1;
+            q.push((-1 * t.2, t.1));
+        }
+
+        while let Some(t) = q.pop() {
+            if d < t.1 {
+                q.push(t);
+                break;
+            }
+        }
+
+        match q.peek() {
+            Some(t) => println!("{}", -1 * t.0),
+            None => println!("{}", -1)
+        }
+    }
 }
