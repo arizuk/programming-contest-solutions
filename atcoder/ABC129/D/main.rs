@@ -73,71 +73,67 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-
-
 fn main() {
     input!{
-      n: usize,
-      x: usize,
-      mut blus: [(i64, i64, i64); n]
+      h: usize,
+      w: usize,
+      ss: [chars; h],
     }
-    let d: i64 = blus.iter().map(|v| -v.0 * v.1).sum();
-    let mut sums: Vec<(usize, i64)> = blus.iter().map(|v| v.2 * (x as i64 - v.0) + v.1 * v.0).enumerate().collect();
-    sums.sort_by_key(|v| v.1);
-    sums.reverse();
-
-    let mut acm = vec![0; n];
-    let mut sum_index_of = vec![0; n];
-    for (j, &(i, sum)) in sums.iter().enumerate() {
-        sum_index_of[i] = j;
-        if j > 0 {
-            acm[j] = acm[j-1] + sum;
-        } else {
-            acm[j] = sum;
-        }
-    }
-    let ok = |k: usize| {
-        let q: i64 = (k/x) as i64;
-        let r: i64 = k as i64 - (q*x as i64);
-        for i in 0..n {
-            let mut d = d.clone();
-            let &(b, l, u) = &blus[i];
-            d += l as i64 * min(r, b);
-            d += u as i64 * max(r-b, 0);
-
-            let tmp = l as i64 * min(r, b) +u as i64 * max(r-b, 0);
-
-            // q個足す
-            if q > 0 {
-                d += acm[(q-1) as usize];
-                if r > 0 {
-                    let j = sum_index_of[i];
-                    if j <= (q-1) as usize {
-                        // debug!(i, j, k, q, r, sums.len());
-                        d += sums[q as usize].1;
-                        d -= sums[j].1;
-                    }
-                }
-            }
-
-            if d >= 0 {
-                return true;
+    let mut l = vec![vec![0; w]; h];
+    let mut r = vec![vec![0; w]; h];
+    let mut u = vec![vec![0; w]; h];
+    let mut d = vec![vec![0; w]; h];
+    for i in 0..h {
+        let mut cnt = 0;
+        for j in 0..w {
+            if ss[i][j] == '.' {
+                cnt += 1;
+                l[i][j] = cnt;
+            } else {
+                cnt = 0;
             }
         }
-        return false
-    };
 
-    let mut l = 0;
-    let mut r = n*x+1;
-    while l != r {
-        let k = (l+r)/2;
-        if ok(k) {
-            // debug!(l, r, k, "Ok");
-            r = k;
-        } else {
-            // debug!(l, r, k, "Ng");
-            l = k + 1;
+        let mut cnt = 0;
+        for j in (0..w).rev() {
+            if ss[i][j] == '.' {
+                cnt += 1;
+                r[i][j] = cnt;
+            } else {
+                cnt = 0;
+            }
         }
     }
-    println!("{}", r);
+
+    for j in 0..w {
+        let mut cnt = 0;
+        for i in 0..h {
+            if ss[i][j] == '.' {
+                cnt += 1;
+                u[i][j] = cnt;
+            } else {
+                cnt = 0;
+            }
+        }
+
+        let mut cnt = 0;
+        for i in (0..h).rev() {
+            if ss[i][j] == '.' {
+                cnt += 1;
+                d[i][j] = cnt;
+            } else {
+                cnt = 0;
+            }
+        }
+    }
+
+    let mut ans = 0;
+    for i in 0..h {
+        for j in 0..w {
+            if ss[i][j] == '.' {
+                ans = max(ans, l[i][j] + r[i][j] + u[i][j] + d[i][j] - 3);
+            }
+        }
+    }
+    println!("{}", ans);
 }

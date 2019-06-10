@@ -73,71 +73,85 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-
-
 fn main() {
     input!{
-      n: usize,
-      x: usize,
-      mut blus: [(i64, i64, i64); n]
+      h: usize,
+      w: usize,
+      ss: [chars; h],
     }
-    let d: i64 = blus.iter().map(|v| -v.0 * v.1).sum();
-    let mut sums: Vec<(usize, i64)> = blus.iter().map(|v| v.2 * (x as i64 - v.0) + v.1 * v.0).enumerate().collect();
-    sums.sort_by_key(|v| v.1);
-    sums.reverse();
+    let mut col = vec![vec![0; w]; h];
+    let mut row = vec![vec![0; w]; h];
 
-    let mut acm = vec![0; n];
-    let mut sum_index_of = vec![0; n];
-    for (j, &(i, sum)) in sums.iter().enumerate() {
-        sum_index_of[i] = j;
-        if j > 0 {
-            acm[j] = acm[j-1] + sum;
-        } else {
-            acm[j] = sum;
-        }
-    }
-    let ok = |k: usize| {
-        let q: i64 = (k/x) as i64;
-        let r: i64 = k as i64 - (q*x as i64);
-        for i in 0..n {
-            let mut d = d.clone();
-            let &(b, l, u) = &blus[i];
-            d += l as i64 * min(r, b);
-            d += u as i64 * max(r-b, 0);
-
-            let tmp = l as i64 * min(r, b) +u as i64 * max(r-b, 0);
-
-            // q個足す
-            if q > 0 {
-                d += acm[(q-1) as usize];
-                if r > 0 {
-                    let j = sum_index_of[i];
-                    if j <= (q-1) as usize {
-                        // debug!(i, j, k, q, r, sums.len());
-                        d += sums[q as usize].1;
-                        d -= sums[j].1;
+    for i in 0..h {
+        // wについて調べる
+        let mut idx: i64 = -1;
+        let mut num = 0;
+        for j in 0..w {
+            if ss[i][j] == '#' {
+                // debug!(i, j, idx, num);
+                if idx >= 0 {
+                    for k in (idx as usize)..j {
+                        row[i][k] = num;
                     }
                 }
-            }
-
-            if d >= 0 {
-                return true;
+                num = 0;
+                idx = -1;
+            } else {
+                // debug!(i, j, idx, num);
+                if idx < 0 {
+                    num = 0;
+                    idx = j as i64;
+                }
+                num += 1;
             }
         }
-        return false
-    };
 
-    let mut l = 0;
-    let mut r = n*x+1;
-    while l != r {
-        let k = (l+r)/2;
-        if ok(k) {
-            // debug!(l, r, k, "Ok");
-            r = k;
-        } else {
-            // debug!(l, r, k, "Ng");
-            l = k + 1;
+        if idx >= 0 {
+            for k in (idx as usize)..w {
+                row[i][k] = num;
+            }
+        }
+        // debug!(i, row[i]);
+    }
+
+    for j in 0..w {
+        // wについて調べる
+        let mut idx: i64 = -1;
+        let mut num = 0;
+        for i in 0..h {
+            if ss[i][j] == '#' {
+                // debug!(i, j, idx, num);
+                if idx >= 0 {
+                    for k in (idx as usize)..i {
+                        col[k][j] = num;
+                    }
+                }
+                num = 0;
+                idx = -1;
+            } else {
+                // debug!(i, j, idx, num);
+                if idx < 0 {
+                    num = 0;
+                    idx = i as i64;
+                }
+                num += 1;
+            }
+        }
+
+        if idx >= 0 {
+            for k in (idx as usize)..h {
+                col[k][j] = num;
+            }
         }
     }
-    println!("{}", r);
+
+    let mut ans = 0;
+    for i in 0..h {
+        for j in 0..w {
+            if ss[i][j] == '.' {
+                ans = max(ans, col[i][j] + row[i][j] - 1);
+            }
+        }
+    }
+    println!("{}", ans);
 }
