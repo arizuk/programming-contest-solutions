@@ -79,58 +79,27 @@ fn main() {
       mut aa: [i64; n],
     }
     aa.sort();
-    if aa.len() == 1 {
-        return println!("{}", aa[0]);
-    }
     if aa.len() == 2 {
         println!("{}", aa[1] - aa[0]);
         println!("{} {}", aa[1], aa[0]);
         return;
     }
-
-    let mut ps = vec![];
-    let mut ms = vec![];
-    for a in aa {
-        if a>=0 {
-            ps.push(a);
+    let mut r = aa[n-1];
+    let mut l = aa[0];
+    let mut cmd = vec![];
+    for i in 1..n-1 {
+        if aa[i] >= 0 {
+            cmd.push((l, aa[i]));
+            l -= aa[i];
         } else {
-            ms.push(a);
+            cmd.push((r, aa[i]));
+            r -= aa[i];
         }
     }
-    ps.sort();
-    ms.sort();
-    ms.reverse();
-    let mut ans = vec![];
-    if ms.len() == 0 {
-        ms.push(ps[0]-ps[1]);
-        ans.push((ps[0], ps[1]));
-        ps.remove(0);
-        ps.remove(0);
-    } else if ps.len() == 0 {
-        ps.push(ms[0]-ms[1]);
-        ans.push((ms[0], ms[1]));
-        ms.remove(0);
-        ms.remove(0);
-    }
-
-    let m = ms[0];
-    let p = ps[0];
-    let mut cur = m;
-    ms.remove(0);
-    ps.remove(0);
-    for p in ps {
-        ans.push((cur, p));
-        cur -= p;
-    }
-    ans.push((p, cur));
-    cur = p - cur;
-    for m in ms {
-        ans.push((cur, m));
-        cur -= m;
-    }
-
-    println!("{}", cur);
-    for (a,b) in ans {
+    cmd.push((r, l));
+    r -= l;
+    println!("{}", r);
+    for (a, b) in cmd {
         println!("{} {}", a, b);
     }
 }

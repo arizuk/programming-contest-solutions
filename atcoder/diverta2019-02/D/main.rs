@@ -73,53 +73,26 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
+fn solve(n: usize, ws: &[usize], vs: &[usize]) -> usize {
+    let mut dp = vec![0; n+1];
+    for i in 0..ws.len() {
+        for w in 0..n+1 {
+            let cw = ws[i];
+            if w + cw <= n {
+                dp[w + cw] = max(dp[w + cw], dp[w] + vs[i]);
+            }
+        }
+    }
+    dp.into_iter().enumerate().map(|(i,v)| v + n - i).max().unwrap()
+}
+
 fn main() {
     input!{
-      n: u64,
-      gsbs: [(u64,u64,u64); 2],
+      n: usize,
+      a: [usize; 3],
+      b: [usize; 3],
     }
-
-    let (ga1, sa1, ba1) = gsbs[0];
-    let (ga2, sa2, ba2) = gsbs[1];
-
-    let mut pairs = vec![
-        (ga2 * sa1 * ba1, ga1, ga2),
-        (ga1 * sa2 * ba1, sa1, sa2),
-        (ga1 * sa1 * ba2, ba1, ba2),
-    ];
-    pairs.sort();
-    pairs.reverse();
-    // debug!(pairs);
-
-    let mut n = n;
-    let mut temp = 0;
-    for &(_, a1, a2) in pairs.iter() {
-        if a2 > a1 {
-            temp += (n/a1) * a2;
-            n = n%a1;
-            // debug!(temp, n, a1, a2);
-        }
-    }
-    n += temp;
-
-    let mut pairs = vec![
-        (ga1 * sa2 * ba2, ga2, ga1),
-        (ga2 * sa1 * ba2, sa2, sa1),
-        (ga2 * sa2 * ba1, ba2, ba1),
-    ];
-    pairs.sort();
-    pairs.reverse();
-    // debug!(pairs);
-    // debug!(n);
-
-    let mut temp = 0;
-    for &(_, a1, a2) in pairs.iter() {
-        if a2 > a1 {
-            temp += (n/a1) * a2;
-            n = n%a1;
-            // debug!(temp, n, a1, a2);
-        }
-    }
-    n += temp;
-    println!("{}", n);
+    let m = solve(n, &a, &b);
+    let ans = solve(m, &b, &a);
+    println!("{}", ans);
 }

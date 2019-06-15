@@ -74,19 +74,15 @@ fn main() {
       w: usize,
       wvs: [(usize, usize); n],
     }
-    debug!(n, w, wvs);
-    let mut dp = vec![vec![0; w+1]; n];
-    dp[0][0] = 0;
-    dp[0][wvs[0].0] = wvs[0].1;
-    for i in 1..n {
-        let &(wi, vi) = &wvs[i];
-
-        for ww in 0..w+1 {
-            if ww >= wi {
-                dp[i][ww] = dp[i-1][ww-wi] + vi;
+    let mut dp = vec![vec![0; w+1]; n+1];
+    for i in 0..n {
+        let (cw, cv) = wvs[i].clone();
+        for j in 0..w+1 {
+            if j + cw <= w {
+                dp[i+1][j+cw] = max(dp[i+1][j+cw], dp[i][j] + cv);
             }
-            dp[i][ww] = max(dp[i][ww], dp[i-1][ww]);
+            dp[i+1][j] = max(dp[i+1][j], dp[i][j]);
         }
     }
-    println!("{}", dp[n-1].iter().max().unwrap());
+    println!("{}", dp[n].iter().max().unwrap());
 }
