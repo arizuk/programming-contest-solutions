@@ -73,87 +73,64 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-type Matrix = Vec<Vec<u64>>;
-
-// Matrix Exponentiation
-fn mat_mul(a: &Matrix, b: &Matrix, m: u64) -> Matrix {
-    assert!(a[0].len() == b.len());
-
-    let h = a.len();
-    let w = b[0].len();
-
-    let mut ret = vec![vec![0; w]; h];
-    for i in 0..h {
-        for j in 0..w {
-            for k in 0..b.len() {
-                ret[i][j] += (a[i][k] * b[k][j]) % m;
-                ret[i][j] %= m;
-            }
-        }
-    }
-    ret
-}
-
-fn mat_pow(a: &Matrix, mut n: u64, m: u64) -> Matrix {
-    let mut a = a.clone();
-    let mut b = vec![vec![0; a.len()]; a.len()];
-    for i in 0..a.len() {
-        b[i][i] = 1;
-    }
-    while n>0 {
-        if n&1 > 0 {
-            b = mat_mul(&b, &a, m);
-        }
-        a = mat_mul(&a, &a, m);
-        n /= 2;
-    }
-    b
-}
-
-pub fn mod_pow(b: u64, p: u64, m: u64) -> u64 {
-    if p == 0 {
-        return 1;
-    }
-    let mut ret = mod_pow(b * b % m, p / 2, m) % m;
-    if p % 2 == 1 {
-        ret = ret * b % m;
-    }
-    ret
-}
-
 fn main() {
     input!{
-      l: u64,
-      a: u64,
-      b: u64,
-      m: u64,
+      n: usize,
+      mut aa: [i64; n],
     }
-    const D: usize = 18;
+    aa.sort();
+    if aa.len() == 1 {
+        return println!("{}", aa[0]);
+    }
+    if aa.len() == 2 {
+        println!("{}", aa[1] - aa[0]);
+        println!("{} {}", aa[1], aa[0]);
+        return;
+    }
 
-    let mut acm = vec![l; D+1];
-    acm[0] = 0;
-    for d in 1..D+1 {
-        let ten = 10u64.pow(d as u32);
-        if a > ten {
-            acm[d] = 0;
-            continue;
+    let mut ps = vec![];
+    let mut ms = vec![];
+    for a in aa {
+        if a>=0 {
+            ps.push(a);
+        } else {
+            ms.push(a);
         }
-        let idx = (ten - a + b - 1) / b;
-        acm[d] = min(idx, l);
+    }
+    ps.sort();
+    ms.sort();
+    ms.reverse();
+    let mut ans = vec![];
+    if ms.len() == 0 {
+        ms.push(ps[0]-ps[1]);
+        ans.push((ps[0], ps[1]));
+        ps.remove(0);
+        ps.remove(0);
+    } else if ps.len() == 0 {
+        ps.push(ms[0]-ms[1]);
+        ans.push((ms[0], ms[1]));
+        ms.remove(0);
+        ms.remove(0);
     }
 
-    let mut v = vec![vec![0, a, 1]];
-    for d in 1..D+1 {
-        let td = 10u64.pow(d as u32) % m;
-        let r = vec![
-            vec![td,0,0],
-            vec![1,1,0],
-            vec![0,b,1],
-        ];
-        let cd = acm[d] - acm[d-1];
-        let power = mat_pow(&r, cd, m);
-        v = mat_mul(&v, &power, m);
-        // debug!(v);
+    let m = ms[0];
+    let p = ps[0];
+    let mut cur = m;
+    ms.remove(0);
+    ps.remove(0);
+    for p in ps {
+        ans.push((cur, p));
+        cur -= p;
     }
-    println!("{}", v[0][0]);
+    ans.push((p, cur));
+    cur = p - cur;
+    for m in ms {
+        ans.push((cur, m));
+        cur -= m;
+    }
+
+    println!("{}", cur);
+    for (a,b) in ans {
+        println!("{} {}", a, b);
+    }
 }

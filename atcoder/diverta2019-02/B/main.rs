@@ -73,87 +73,33 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-type Matrix = Vec<Vec<u64>>;
-
-// Matrix Exponentiation
-fn mat_mul(a: &Matrix, b: &Matrix, m: u64) -> Matrix {
-    assert!(a[0].len() == b.len());
-
-    let h = a.len();
-    let w = b[0].len();
-
-    let mut ret = vec![vec![0; w]; h];
-    for i in 0..h {
-        for j in 0..w {
-            for k in 0..b.len() {
-                ret[i][j] += (a[i][k] * b[k][j]) % m;
-                ret[i][j] %= m;
-            }
-        }
-    }
-    ret
-}
-
-fn mat_pow(a: &Matrix, mut n: u64, m: u64) -> Matrix {
-    let mut a = a.clone();
-    let mut b = vec![vec![0; a.len()]; a.len()];
-    for i in 0..a.len() {
-        b[i][i] = 1;
-    }
-    while n>0 {
-        if n&1 > 0 {
-            b = mat_mul(&b, &a, m);
-        }
-        a = mat_mul(&a, &a, m);
-        n /= 2;
-    }
-    b
-}
-
-pub fn mod_pow(b: u64, p: u64, m: u64) -> u64 {
-    if p == 0 {
-        return 1;
-    }
-    let mut ret = mod_pow(b * b % m, p / 2, m) % m;
-    if p % 2 == 1 {
-        ret = ret * b % m;
-    }
-    ret
-}
-
 fn main() {
     input!{
-      l: u64,
-      a: u64,
-      b: u64,
-      m: u64,
+      n: usize,
+      mut xys: [(i64, i64); n],
     }
-    const D: usize = 18;
+    xys.sort();
+    let mut ans = n+1;
+    if n == 1 {
+        return println!("{}", 1);
+    }
 
-    let mut acm = vec![l; D+1];
-    acm[0] = 0;
-    for d in 1..D+1 {
-        let ten = 10u64.pow(d as u32);
-        if a > ten {
-            acm[d] = 0;
-            continue;
+    for i in 0..n {
+        for j in i+1..n {
+            let p = xys[j].0 - xys[i].0;
+            let q = xys[j].1 - xys[i].1;
+            // debug!(p, q);
+
+            let mut cnt = 0;
+            for i in 0..n {
+                let (x, y) = xys[i].clone();
+                if let Ok(v) = xys.binary_search(&(x-p, y-q)) {
+                } else {
+                    cnt += 1;
+                }
+            }
+            ans = min(ans, cnt);
         }
-        let idx = (ten - a + b - 1) / b;
-        acm[d] = min(idx, l);
     }
-
-    let mut v = vec![vec![0, a, 1]];
-    for d in 1..D+1 {
-        let td = 10u64.pow(d as u32) % m;
-        let r = vec![
-            vec![td,0,0],
-            vec![1,1,0],
-            vec![0,b,1],
-        ];
-        let cd = acm[d] - acm[d-1];
-        let power = mat_pow(&r, cd, m);
-        v = mat_mul(&v, &power, m);
-        // debug!(v);
-    }
-    println!("{}", v[0][0]);
+    println!("{}", ans);
 }
