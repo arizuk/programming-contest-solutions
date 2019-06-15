@@ -89,46 +89,17 @@ impl PartialOrd for Rev {
     }
 }
 
-#[derive(Debug)]
-pub struct UnionFind {
-    par: Vec<usize>,
-}
-impl UnionFind {
-    pub fn new(n: usize) -> UnionFind {
-        let mut vec = vec![0; n];
-        for i in 0..n {
-            vec[i] = i;
-        }
-        UnionFind { par: vec }
-    }
-    pub fn find(&mut self, x: usize) -> usize {
-        if x == self.par[x] {
-            x
-        } else {
-            let par = self.par[x];
-            let res = self.find(par);
-            self.par[x] = res;
-            res
-        }
-    }
-    pub fn same(&mut self, a: usize, b: usize) -> bool {
-        self.find(a) == self.find(b)
-    }
-    pub fn unite(&mut self, a: usize, b: usize) {
-        let apar = self.find(a);
-        let bpar = self.find(b);
-        self.par[apar] = bpar;
-    }
-}
-
 
 fn main() {
     input!{
       n: usize,
       m: usize,
-      pqcs: [(usize1,usize1,usize1); m],
+      pqcs: [(usize,usize,usize); m],
     }
     let mut nodes = vec![];
+    for i in 0..n {
+        nodes.push((i+1, 0));
+    }
     for &(p, q, c) in pqcs.iter() {
         nodes.push((p, c));
         nodes.push((q, c));
@@ -137,45 +108,52 @@ fn main() {
     nodes.dedup();
 
     let nn = nodes.len();
-    let mut uf = UnionFind::new(nn);
-    for &(p, q, c) in pqcs.iter() {
-        let pi = nodes.binary_search(&(p, c)).unwrap();
-        let qi = nodes.binary_search(&(q, c)).unwrap();
-        uf.unite(pi, qi);
+    let mut edges = vec![vec![]; nn];
+
+    for i in 0..nn {
+        let node = nodes[i];
+        if node.1 == 0 { continue; }
+        let out = nodes.binary_search(&(node.0, 0)).unwrap();
+
+        edges[i].push((out, 0)); // 降りるとき
+        edges[out].push((i, 1)); // 乗るとき
     }
 
-    let mut edges = vec![vec![]; n+nn];
     for &(p, q, c) in pqcs.iter() {
-        let pi = nodes.binary_search(&(p, c)).unwrap();
-        let par = uf.find(pi) + n;
-
-        edges[p].push(par);
-        edges[par].push(p);
-        edges[q].push(par);
-        edges[par].push(q);
+        // p.c -> q.c 0
+        // q.c -> p.c 0
+        let pc = nodes.binary_search(&(p, c)).unwrap();
+        let qc = nodes.binary_search(&(q, c)).unwrap();
+        edges[pc].push((qc, 0));
+        edges[qc].push((pc, 0));
     }
+
+    let s = nodes.binary_search(&(1, 0)).unwrap();
+    let e = nodes.binary_search(&(n, 0)).unwrap();
 
     // 01DFS
-    let s = 0;
-    let e = n-1;
     use std::collections::VecDeque;
     let mut q = VecDeque::new();
     const INF: usize = 1 << 31;
-    let mut dist = vec![INF; n+nn];
+    let mut dist = vec![INF; nn];
     dist[s] = 0;
     q.push_back(s);
     while q.len() > 0 {
         let cur = q.pop_front().unwrap();
-        for &next_node in edges[cur].iter() {
-            if dist[cur] + 1 < dist[next_node] {
-                dist[next_node] = dist[cur] + 1;
-                q.push_back(next_node);
+        for &(next_node, cost) in edges[cur].iter() {
+            if dist[cur] + cost < dist[next_node] {
+                dist[next_node] = dist[cur] + cost;
+                if cost == 1 {
+                    q.push_back(next_node);
+                } else {
+                    q.push_front(next_node);
+                }
             }
         }
     }
     if dist[e] >= INF {
         println!("{}", -1);
     } else {
-        println!("{}", dist[e]/2);
+        println!("{}", dist[e]);
     }
 }
