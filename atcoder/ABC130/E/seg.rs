@@ -74,6 +74,65 @@ use std::cmp::{min, max};
 use std::io::Write;
 
 const MOD: usize = 1e9 as usize + 7;
+pub mod ds {
+    pub struct SegmentTree<T, F> {
+        n: usize,
+        pub data: Vec<T>,
+        init: T,
+        f: F,
+    }
+    impl<T, F> SegmentTree<T, F>
+    where
+        T: Copy,
+        F: Fn(T, T) -> T,
+    {
+        pub fn new(size: usize, init: T, f: F) -> Self {
+            let mut n = 1;
+            while n < size {
+                n *= 2;
+            }
+            SegmentTree {
+                n: n,
+                init: init,
+                f: f,
+                data: vec![init; n * 2 - 1],
+            }
+        }
+        pub fn alter(&mut self, mut k: usize, x: T) {
+            k += self.n - 1;
+            self.data[k] = (self.f)(self.data[k], x);
+            while k > 0 {
+                k = (k - 1) / 2;
+                self.data[k] = (self.f)(self.data[2 * k + 1], self.data[2 * k + 2]);
+            }
+        }
+        pub fn update(&mut self, mut k: usize, x: T) {
+            k += self.n - 1;
+            self.data[k] = x;
+            while k > 0 {
+                k = (k - 1) / 2;
+                self.data[k] = (self.f)(self.data[2 * k + 1], self.data[2 * k + 2]);
+            }
+        }
+        #[doc = " [l, r)"]
+        pub fn query(&self, l: usize, r: usize) -> T {
+            assert!(l < r);
+            self.do_query(l, r, 0, 0, self.n)
+        }
+        fn do_query(&self, l: usize, r: usize, k: usize, a: usize, b: usize) -> T {
+            if b <= l || r <= a {
+                self.init
+            } else if l <= a && b <= r {
+                self.data[k]
+            } else {
+                let q1 = self.do_query(l, r, k * 2 + 1, a, (a + b) / 2);
+                let q2 = self.do_query(l, r, k * 2 + 2, (a + b) / 2, b);
+                (self.f)(q1, q2)
+            }
+        }
+    }
+}
+
 
 fn main() {
     input!{
@@ -82,26 +141,17 @@ fn main() {
       ss: [usize; n],
       ts: [usize; m],
     }
-    let mut dp = vec![0usize; n+1];
-    dp[0] = 1;
-    for i in 0..m {
-        let t = ts[i];
-        let mut acm = dp[0];
-        for i in 0..n {
-            let s = ss[i];
-            let temp = dp[i+1];
-            if s == t {
-                dp[i+1] += acm;
-                dp[i+1] %= MOD;
+    let f = |a, b| (a+b) % MOD;
+    let mut seg = ds::SegmentTree::new(m+1, 0usize, f);
+    seg.alter(0, 1);
+    for i in 0..n {
+        for j in (0..m).rev() {
+            if ss[i] == ts[j] {
+                let temp = seg.query(0, j+1);
+                seg.alter(j+1, temp);
             }
-            acm += temp;
-            acm %= MOD;
         }
     }
-    let mut ans = 0;
-    for v in dp {
-        ans += v;
-        ans %= MOD;
-    }
+    let ans = seg.query(0, m+1);
     println!("{}", ans);
 }

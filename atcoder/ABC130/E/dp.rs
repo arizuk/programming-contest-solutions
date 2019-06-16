@@ -29,6 +29,11 @@ macro_rules! input_inner {
         let $var = read_value!($next, $t);
         input_inner!{$next $($r)*}
     };
+
+    ($next:expr, mut $var:ident : $t:tt $($r:tt)*) => {
+        let mut $var = read_value!($next, $t);
+        input_inner!{$next $($r)*}
+    };
 }
 
 #[allow(unused_macros)]
@@ -68,46 +73,33 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-fn print_lcs(a: &Vec<char>, b: &Vec<char>, lcs: &Vec<Vec<usize>>, i: usize, j: usize) {
-    if i == 0 || j == 0 {
-        return;
-    }
-    if a[i-1] == b[j-1] {
-        print_lcs(a, b, lcs, i-1, j-1);
-        print!("{}", a[i-1]);
-    } else {
-        if lcs[i-1][j] >= lcs[i][j-1] {
-            print_lcs(a, b, lcs, i-1, j);
-        } else {
-            print_lcs(a, b, lcs, i, j-1);
-        }
-    }
-}
+const MOD: usize = 1e9 as usize + 7;
 
-fn solve() {
+fn main() {
     input!{
-      s: chars,
-      t: chars,
+      n: usize,
+      m: usize,
+      ss: [usize; n],
+      ts: [usize; m],
     }
-
-    let n = s.len();
-    let m = t.len();
-    let mut dp = vec![vec![0; m+1]; n+1];
-
-    for i in 0..n {
-        for j in 0..m {
-            if s[i] == t[j] {
-                dp[i+1][j+1] = dp[i][j] + 1;
-            } else {
-                dp[i+1][j+1] = max(dp[i+1][j], dp[i][j+1]);
+    let mut dp = vec![0usize; n+1];
+    dp[0] = 1;
+    for i in 0..m {
+        let t = ts[i];
+        let mut acm = dp[0];
+        for i in 0..n {
+            let s = ss[i];
+            acm += dp[i+1];
+            acm %= MOD;
+            if s == t {
+                dp[i+1] = acm;
             }
         }
     }
-    print_lcs(&s, &t, &dp, n, m);
-}
-
-fn main() {
-    let stack_size = 104_857_600; // 100 MB
-    let thd = std::thread::Builder::new().stack_size(stack_size);
-    thd.spawn(|| solve()).unwrap().join().unwrap();
+    let mut ans = 0;
+    for v in dp {
+        ans += v;
+        ans %= MOD;
+    }
+    println!("{}", ans);
 }
