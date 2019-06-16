@@ -75,7 +75,11 @@ use std::io::Write;
 
 fn solve(n: i64, a: &[i64], b: &[i64]) -> i64 {
     let mut uabs: Vec<_> = a.iter().zip(b.iter()).map(|(&a, &b)|
-        (if b > a { n/a } else { 0 }, a, b)
+        (
+            if b > a { n/a } else { 0 },
+            a,
+            b
+        )
     ).collect();
     uabs.sort();
 
@@ -91,9 +95,16 @@ fn solve(n: i64, a: &[i64], b: &[i64]) -> i64 {
                 break;
             }
             let k =  if bk > ak { rem/ak } else { 0 };
+
+            let incr = [i,j,k].into_iter().enumerate().map(|(i, n)| {
+                let b = uabs[i].2;
+                let a = uabs[i].1;
+                n * (b - a)
+            }).sum::<i64>();
+
             ans = max(
                 ans,
-                n + [i,j,k].into_iter().enumerate().map(|(i, n)| n * (uabs[i].2 - uabs[i].1)).sum::<i64>()
+                n + incr,
             );
         }
     }

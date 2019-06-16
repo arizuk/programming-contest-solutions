@@ -9,7 +9,10 @@ use std::io::Write;
 
 fn main() {
     let a = vec![5, 2, 3, 6];
-    let b: Vec<_> = (0..).zip(a.iter()).collect();
+    let b: Vec<_> = (0..).zip(a.iter().cloned()).collect();
+    debug!(b);
+
+    let b: Vec<_> = (0..a.len()).map(|i| (a[i], a[i]*2, i)).collect();
     debug!(b);
 
     // let b: Vec<(&usize,usize)> = a.iter().zip(0..).collect();
