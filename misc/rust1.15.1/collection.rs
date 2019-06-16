@@ -20,4 +20,22 @@ fn main() {
         println!("v={:?} sum={}", v, v.iter().sum::<usize>());
         // v[0] is usize
     }
+
+    for i in 0..10 {
+        if a.iter().any(|&v| v== i) {
+            println!("a={:?} Contains {}", a, i);
+        }
+    }
+    if !a.iter().all(|v| *v % 2 == 1 ) {
+        println!("all a={:?} is not odd", a);
+    }
+    let b = [1, 3, 5];
+    if b.iter().all(|v| *v % 2 == 1 ) {
+        println!("all b={:?} is odd", b);
+    }
+
+    let c: Vec<usize> = vec![];
+    if c.iter().all(|v| *v % 2 == 1 ) {
+        println!("all returns true if the collection length is zero");
+    }
 }

@@ -66,4 +66,12 @@ fn main() {
     }
   }
   println!("map={:?}", map);
+
+  let string = "final fantasy".to_string();
+  let mut map: HashMap<char, usize> = string.chars().map(|c| (c, 0)).collect();
+  for c in string.chars() {
+    // *map.entry(c).or_insert(0) += 1;
+    *map.get_mut(&c).unwrap() += 1;
+  }
+  println!("map={:?}", map);
 }
