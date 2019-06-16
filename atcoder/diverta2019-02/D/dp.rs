@@ -73,38 +73,24 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
-fn solve(n: i64, a: &[i64], b: &[i64]) -> i64 {
-    let mut uabs: Vec<_> = a.iter().zip(b.iter()).map(|(&a, &b)|
-        (if b > a { n/a } else { 0 }, a, b)
-    ).collect();
-    uabs.sort();
-
-    let mut ans = n;
-    for i in 0..uabs[0].0+1 {
-        for j in 0..uabs[1].0+1 {
-            let &(_, ai, _) = &uabs[0];
-            let &(_, aj, _) = &uabs[1];
-            let &(_, ak, bk) = &uabs[2];
-
-            let rem = n - ai*i - aj*j;
-            if rem < 0 {
-                break;
+fn solve(n: usize, ws: &[usize], vs: &[usize]) -> usize {
+    let mut dp = vec![0; n+1];
+    for i in 0..ws.len() {
+        for w in 0..n+1 {
+            let cw = ws[i];
+            if w + cw <= n {
+                dp[w + cw] = max(dp[w + cw], dp[w] + vs[i]);
             }
-            let k =  if bk > ak { rem/ak } else { 0 };
-            ans = max(
-                ans,
-                n + [i,j,k].into_iter().enumerate().map(|(i, n)| n * (uabs[i].2 - uabs[i].1)).sum::<i64>()
-            );
         }
     }
-    ans
+    dp.into_iter().enumerate().map(|(i,v)| v + n - i).max().unwrap()
 }
 
 fn main() {
     input!{
-      n: i64,
-      a: [i64; 3],
-      b: [i64; 3],
+      n: usize,
+      a: [usize; 3],
+      b: [usize; 3],
     }
     let m = solve(n, &a, &b);
     let ans = solve(m, &b, &a);

@@ -78,9 +78,9 @@ fn main() {
       n: usize,
       k: usize,
     }
-    if n%k == 0 {
+    if k == 1 {
         println!("{}", 0);
     } else {
-        println!("{}", n%k);
+        println!("{}", n-k);
     }
 }
