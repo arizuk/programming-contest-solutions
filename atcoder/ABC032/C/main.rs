@@ -73,32 +73,51 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
+#[doc = " [l, r)"]
+pub fn binary_search_by<F>(mut l: usize, mut r: usize, f: &F) -> usize
+where
+    F: Fn(usize) -> bool,
+{
+    assert!(l <= r);
+    while r != l {
+        let m = l + (r - l) / 2;
+        if f(m) {
+            r = m;
+        } else {
+            l = m + 1;
+        }
+    }
+    r
+}
+
 fn main() {
     input!{
       n: usize,
-      k: usize,
-      aa: [usize; n],
+      k: u64,
+      aa: [u64; n],
     }
 
-    let mut r = 0; // 条件を満たすindex
+    let mut r = 0;
     let mut cur = aa[r];
     let mut ans = 0;
-    let ok = |v| v >= k;
-
     // しゃくとり法
     for l in 0..n {
+        if aa[l] == 0 {
+            return println!("{}", n);
+        }
         if r < l {
             r = l;
             cur = aa[r];
         }
-        while !ok(cur) && r < n {
+        while cur <= k && r < n {
             r += 1;
             if r < n {
-                cur += aa[r];
+                cur *= aa[r];
             }
         }
-        ans += n-r;
-        cur -= aa[l];
+        // debug!(l, r, cur);
+        ans = max(ans, r-l);
+        cur /= aa[l];
     }
     println!("{}", ans);
 }

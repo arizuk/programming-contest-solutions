@@ -73,32 +73,50 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::Write;
 
+#[allow(dead_code)]
+pub struct ModFactorial {
+    fact: Vec<usize>,
+    inv: Vec<usize>,
+    finv: Vec<usize>,
+}
+impl ModFactorial {
+    pub fn new(max_value: usize) -> Self {
+        let mut fact = vec![0; max_value + 1];
+        let mut inv = vec![0; max_value + 1];
+        let mut finv = vec![0; max_value + 1];
+        fact[0] = 1;
+        fact[1] = 1;
+        finv[0] = 1;
+        finv[1] = 1;
+        inv[1] = 1;
+        for i in 2..max_value + 1 {
+            fact[i] = fact[i - 1] * i % MOD;
+            inv[i] = MOD - inv[MOD % i] * (MOD / i) % MOD;
+            finv[i] = finv[i - 1] * inv[i] % MOD;
+        }
+        ModFactorial {
+            fact: fact,
+            inv: inv,
+            finv: finv,
+        }
+    }
+    pub fn combination(&self, n: usize, k: usize) -> usize {
+        assert!(n >= k);
+        self.fact[n] * self.finv[n - k] % MOD * self.finv[k] % MOD
+    }
+}
+const MOD: usize = 1e9 as usize + 7;
+
 fn main() {
     input!{
-      n: usize,
-      k: usize,
-      aa: [usize; n],
+      w: usize1,
+      h: usize1,
     }
-
-    let mut r = 0; // 条件を満たすindex
-    let mut cur = aa[r];
-    let mut ans = 0;
-    let ok = |v| v >= k;
-
-    // しゃくとり法
-    for l in 0..n {
-        if r < l {
-            r = l;
-            cur = aa[r];
-        }
-        while !ok(cur) && r < n {
-            r += 1;
-            if r < n {
-                cur += aa[r];
-            }
-        }
-        ans += n-r;
-        cur -= aa[l];
-    }
+    let fact = ModFactorial::new(w+h);
+    let mut ans = fact.fact[w+h];
+    ans *= fact.finv[w];
+    ans %= MOD;
+    ans *= fact.finv[h];
+    ans %= MOD;
     println!("{}", ans);
 }

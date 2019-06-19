@@ -75,30 +75,22 @@ use std::io::Write;
 
 fn main() {
     input!{
-      n: usize,
-      k: usize,
-      aa: [usize; n],
+      s: chars,
     }
-
-    let mut r = 0; // 条件を満たすindex
-    let mut cur = aa[r];
     let mut ans = 0;
-    let ok = |v| v >= k;
-
-    // しゃくとり法
-    for l in 0..n {
-        if r < l {
-            r = l;
-            cur = aa[r];
-        }
-        while !ok(cur) && r < n {
-            r += 1;
-            if r < n {
-                cur += aa[r];
+    let mut flag = true;
+    for i in 0..s.len() {
+        if s[i] == '+' {
+            if flag {
+                ans += 1;
             }
+            flag = true;
+        } else if s[i] == '0' {
+            flag = false;
         }
-        ans += n-r;
-        cur -= aa[l];
+    }
+    if flag {
+        ans += 1;
     }
     println!("{}", ans);
 }

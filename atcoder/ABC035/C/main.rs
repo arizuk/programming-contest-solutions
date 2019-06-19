@@ -76,29 +76,21 @@ use std::io::Write;
 fn main() {
     input!{
       n: usize,
-      k: usize,
-      aa: [usize; n],
+      q: usize,
+      lrs: [(usize1,usize1); q],
+    }
+    let mut imos = vec![0i64; n];
+    for (l, r) in lrs {
+        imos[l] += 1;
+        if r < n-1 {
+            imos[r+1] -= 1;
+        }
     }
 
-    let mut r = 0; // 条件を満たすindex
-    let mut cur = aa[r];
-    let mut ans = 0;
-    let ok = |v| v >= k;
-
-    // しゃくとり法
-    for l in 0..n {
-        if r < l {
-            r = l;
-            cur = aa[r];
-        }
-        while !ok(cur) && r < n {
-            r += 1;
-            if r < n {
-                cur += aa[r];
-            }
-        }
-        ans += n-r;
-        cur -= aa[l];
+    let mut cur = 0i64;
+    for i in 0..n {
+        cur += imos[i];
+        print!("{}", cur%2);
     }
-    println!("{}", ans);
+    println!();
 }

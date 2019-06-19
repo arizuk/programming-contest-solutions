@@ -79,26 +79,21 @@ fn main() {
       k: usize,
       aa: [usize; n],
     }
-
-    let mut r = 0; // 条件を満たすindex
-    let mut cur = aa[r];
+    let mut cur = 0;
+    let mut l = 0;
+    let mut r = 0;
     let mut ans = 0;
-    let ok = |v| v >= k;
-
-    // しゃくとり法
-    for l in 0..n {
-        if r < l {
-            r = l;
-            cur = aa[r];
-        }
-        while !ok(cur) && r < n {
-            r += 1;
-            if r < n {
-                cur += aa[r];
+    'outer: loop {
+        while cur < k {
+            if r == n {
+                break 'outer;
             }
+            cur += aa[r];
+            r += 1;
         }
-        ans += n-r;
+        ans += n - r + 1;
         cur -= aa[l];
+        l += 1;
     }
     println!("{}", ans);
 }
