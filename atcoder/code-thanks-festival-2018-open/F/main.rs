@@ -157,7 +157,6 @@ fn main() {
     }
     let mut depth = vec![0; n];
     set_depth(&edges, root, 1, &mut depth);
-    debug!(root, edges, depth);
 
     let mut cur_k = k;
     let mut cur_m = m;
@@ -178,14 +177,19 @@ fn main() {
             let mut list = vec![];
             dfs(&edges, root, 1, &mut used, &mut list);
             list.sort();
-            // debug!(ans, i, list, cur_k - depth[i], cur_m - 1);
-            debug!(ans, i, list, depth[i], cur_k, cur_m);
 
             // これを使ってokなら
             if check(&list, cur_k - depth[i], cur_m - 1) {
                 cur_k -= depth[i];
                 cur_m -= 1;
                 ans.push(i);
+
+                // list以の要素は使えなくする
+                used = vec![true; n];
+                for l in list {
+                    used[l.1] = false;
+                }
+
                 if cur_m == 0 {
                     // debug!(ans);
                     for a in ans {
@@ -200,6 +204,9 @@ fn main() {
                 used[i] = false;
             }
         }
+    }
+    if ans.len() > 0 {
+        unreachable!()
     }
     println!("-1");
 }
