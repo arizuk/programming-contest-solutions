@@ -79,34 +79,64 @@ fn main() {
       n: usize,
       k: usize,
     }
-    let root = (n as f64).sqrt() as usize;
-    let mut nums: Vec<_> = (1..root+1).map(|_|1).collect();
-    {
-        let mut cur = root + 1;
-        while cur <= n {
-            let lower = cur;
-            let upper = n / (n/cur);
-            nums.push((upper - lower + 1));
-            cur = upper + 1;
-        }
-    }
-    let nn = nums.len();
-    let mut dp = vec![vec![0; nn]; k];
+    let rn = (n as f64).sqrt() as usize;
 
-    for i in 0..nn {
-        dp[0][i] = nums[i];
-    }
-    for i in 0..k-1 {
-        let mut acm = 0;
-        for j in (0..nn).rev() {
-            acm += dp[i][nn-j-1];
-            acm %= MOD;
-            dp[i+1][j] = acm * nums[j] % MOD;
+    let mut lus = vec![0; rn+1];
+    for i in 1..rn+1 {
+        let upper = n/i;
+        let lower = max(n/(i+1) + 1, rn+1);
+        if lower <= upper {
+            lus[i] = upper - lower + 1;
+            // debug!(i, lower, upper);
         }
     }
+
+    let mut dp1 = vec![vec![0; rn+2]; k];
+    let mut dp2 = vec![vec![0; rn+2]; k];
+
+    for j in 1..rn+1 {
+        dp1[0][j] = 1;
+        dp2[0][j] = lus[j];
+    }
+
+    for i in 0..k-1 {
+        let mut acm = vec![0; rn+2];
+        for j in 1..rn+1 {
+            acm[j+1] = acm[j] + dp1[i][j];
+            acm[j+1] %= MOD;
+        }
+
+        let mut acm2 = vec![0; rn+2];
+        for j in (1..rn+1).rev() {
+            acm2[j-1] = acm2[j] + dp2[i][j] % MOD;
+            acm2[j-1] %= MOD;
+        }
+
+
+        for j in 1..rn+1 {
+            dp1[i+1][j] += acm[rn+1];
+            dp1[i+1][j] %= MOD;
+            dp1[i+1][j] += acm2[j-1];
+            dp1[i+1][j] %= MOD;
+
+            dp2[i+1][j] += acm[j+1] * lus[j] % MOD;
+            dp2[i+1][j] %= MOD;
+        }
+    }
+
+    // debug!(lus);
+    // for i in 0..k {
+    //     debug!(dp1[i]);
+    //     debug!(dp2[i]);
+    // }
+
     let mut ans = 0;
-    for i in 0..nn {
-        ans += dp[k-1][i];
+    for i in 1..rn+1 {
+
+        ans += dp1[k-1][i];
+        ans %= MOD;
+
+        ans += dp2[k-1][i];
         ans %= MOD;
     }
     println!("{}", ans);
