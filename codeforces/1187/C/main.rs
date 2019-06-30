@@ -69,13 +69,53 @@ macro_rules! debug {
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
+
 #[allow(unused_imports)]
-use std::io::{stdout, stdin, BufWriter, Write};
+use std::io::Write;
 
 fn main() {
-    let out = std::io::stdout();
-    let mut out = BufWriter::new(out.lock());
-    macro_rules! puts {
-        ($($format:tt)*) => (writeln!(out,$($format)*).unwrap());
+    input!{
+      n: usize,
+      m: usize,
+      tlr: [(usize,usize1,usize1); m],
     }
+
+    let mut table = vec![false ; n];
+    for i in 0..m {
+        let (t, l, r) = tlr[i].clone();
+        if t == 1 {
+            for j in l+1..r+1 {
+                table[j] = true;
+            }
+        }
+    }
+
+    for i in 0..m {
+        let (t, l, r) = tlr[i].clone();
+        if t == 0 {
+            let mut ok = false;
+            for j in l+1..r+1 {
+                if table[j] == false {
+                    ok = true;
+                }
+            }
+            if !ok {
+                return println!("{}", "NO");
+            }
+        }
+    }
+
+    let mut ans = vec![0; n];
+    let mut cur = 1;
+    for i in (0..n).rev() {
+        ans[i] = cur;
+        if !table[i] {
+            cur += 1;
+        }
+    }
+    println!("{}", "YES");
+    for a in ans {
+        print!("{} ", a);
+    }
+    println!();
 }

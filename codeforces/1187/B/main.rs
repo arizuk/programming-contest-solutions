@@ -69,13 +69,36 @@ macro_rules! debug {
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
+
 #[allow(unused_imports)]
-use std::io::{stdout, stdin, BufWriter, Write};
+use std::io::Write;
 
 fn main() {
-    let out = std::io::stdout();
-    let mut out = BufWriter::new(out.lock());
-    macro_rules! puts {
-        ($($format:tt)*) => (writeln!(out,$($format)*).unwrap());
+    input!{
+      n: usize,
+      s: chars,
+      m: usize,
+      frs: [chars; m]
+    }
+    let mut cnt = vec![0; 26];
+    let mut table = vec![vec![0; n]; 26];
+    for i in 0..n {
+        let c = s[i];
+        let ci = (c as u8 - 'a' as u8) as usize;
+        table[ci][ cnt[ci] ] = i;
+        cnt[ci] += 1;
+    }
+
+    for i in 0..m {
+        let fr = frs[i].clone();
+        let mut cnt = vec![0; 26];
+
+        let mut ans = 0;
+        for &c in fr.iter() {
+            let ci = (c as u8 - 'a' as u8) as usize;
+            ans = max(ans, table[ci][ cnt[ci] ]);
+            cnt[ci] += 1;
+        }
+        println!("{}", ans+1);
     }
 }

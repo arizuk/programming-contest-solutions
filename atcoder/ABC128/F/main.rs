@@ -69,13 +69,25 @@ macro_rules! debug {
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
+
 #[allow(unused_imports)]
-use std::io::{stdout, stdin, BufWriter, Write};
+use std::io::Write;
 
 fn main() {
-    let out = std::io::stdout();
-    let mut out = BufWriter::new(out.lock());
-    macro_rules! puts {
-        ($($format:tt)*) => (writeln!(out,$($format)*).unwrap());
+    input!{
+      n: usize,
+      ss: usize,
+    }
+
+    for x in 2..n {
+        for y in 1..x {
+            if (n-1-x) % y == 0 {
+                let a = x;
+                let b = x - y;
+                debug!(a, b);
+            } else {
+                // debug!(n-1-x, x, y);
+            }
+        }
     }
 }
