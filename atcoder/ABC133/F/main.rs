@@ -72,15 +72,76 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
-type Pair = (usize,usize,usize,usize);
+use std::collections::HashSet;
+use std::collections::HashMap;
 
-fn dfs(edges: &Vec<Vec<Pair>>, cur: usize, par: usize, e2: &mut Vec<Pair>, depth: usize) {
-    for &(nd, c, d, _) in edges[cur].iter() {
+
+type Pair = (usize,usize,usize);
+
+fn dfs1(
+    edges: &Vec<Vec<Pair>>, cur: usize, par: usize,
+    pars: &mut Vec<Vec<usize>>, depths: &mut Vec<usize>, dist: &mut Vec<usize>,
+    d: usize
+) {
+    pars[0][cur] = par;
+    depths[cur] = d;
+
+    for &(nd, _, n_dist) in edges[cur].iter() {
         if nd != par {
-            e2[nd] = (cur, c, d, depth+1);
-            dfs(edges, nd, cur, e2, depth+1);
+            dist[nd] = dist[cur] + n_dist;
+            dfs1(edges, nd, cur, pars ,depths, dist, d+1);
         }
     }
+}
+
+fn dfs2(
+    edges: &Vec<Vec<Pair>>, cur: usize, par: usize,
+    cdist: &mut Vec<usize>, cnums: &mut Vec<usize>,
+    qs: &Vec<HashSet<usize>>,
+    mdist: &mut Vec<HashMap<usize, usize>>, mnums: &mut Vec<HashMap<usize, usize>>,
+) {
+    for &query_color in qs[cur].iter() {
+        mdist[cur].insert(query_color, cdist[query_color]);
+        mnums[cur].insert(query_color, cnums[query_color]);
+    }
+
+    for &(nd, color, n_dist) in edges[cur].iter() {
+        if nd != par {
+            cdist[color] += n_dist;
+            cnums[color] += 1;
+
+            dfs2(edges, nd, cur, cdist, cnums, qs, mdist, mnums);
+
+            cdist[color] -= n_dist;
+            cnums[color] -= 1;
+        }
+    }
+}
+
+// LCA(Lowest Common Ancenstor)
+fn lca(par: &Vec<Vec<usize>>, depth: &Vec<usize>, mut u:usize, mut v:usize) -> usize {
+    if depth[u] > depth[v] {
+        std::mem::swap(&mut u, &mut v);
+    }
+
+    let max_k = par.len();
+    for k in 0..max_k {
+        if ((depth[v] - depth[u]) >> k) & 1 > 0 {
+            v = par[k][v];
+        }
+    }
+    if u == v {
+        return v
+    }
+
+    // 二分探索
+    for k in (0..max_k).rev() {
+        if par[k][u] != par[k][v] {
+            u = par[k][u];
+            v = par[k][v];
+        }
+    }
+    par[0][u]
 }
 
 fn main() {
@@ -97,50 +158,51 @@ fn main() {
       xyuvs: [(usize1,usize,usize1,usize1); q],
     }
 
+    let logn = (n.next_power_of_two() as f64).log2() as usize;
+
     let mut edges = vec![vec![]; n];
     for (a, b, c, d) in abcds {
-        edges[a].push((b, c, d, 0));
-        edges[b].push((a, c, d, 0));
+        edges[a].push((b, c, d));
+        edges[b].push((a, c, d));
     }
-    let mut e2 = vec![(0,0,0,0); n];
-    dfs(&edges, 0, n, &mut e2, 0);
+
+    let mut par = vec![vec![0; n]; logn+1];
+    let mut depth = vec![0; n];
+    let mut dist = vec![0; n];
+
+    dfs1(&edges, 0, n, &mut par, &mut depth, &mut dist, 0);
+
+    for k in 1..logn+1 {
+        for i in 0..n {
+            if par[k-1][i] < n {
+                par[k][i] = par[k-1][par[k-1][i]];
+            } else {
+                par[k][i] = n;
+            }
+        }
+    }
+
+    let mut qs = vec![HashSet::new(); n];
+    for &(x, y, u, v) in xyuvs.iter() {
+        qs[u].insert(x);
+        qs[v].insert(x);
+        let w = lca(&par, &depth, u, v);
+        qs[w].insert(x);
+    }
+
+    let mut cdist = vec![0; n];
+    let mut cnums = vec![0; n];
+    let mut mdist = vec![HashMap::new(); n];
+    let mut mnums = vec![HashMap::new(); n];
+    dfs2(&edges, 0, n, &mut cdist, &mut cnums, &qs, &mut mdist, &mut mnums);
 
     for i in 0..q {
         let (x, y, u, v) = xyuvs[i];
+        let w = lca(&par, &depth, u, v);
 
-        let mut n1 = u;
-        let mut n2 = v;
-        let mut cur_d = min(e2[n1].3, e2[n2].3);
-        let mut c1 = 0;
-        let mut c2 = 0;
-
-        loop {
-            // debug!(n1, n2, cur_d, c1, c2);
-            while e2[n1].3 > cur_d {
-                if e2[n1].1 == x {
-                    c1 += y;
-                } else {
-                    c1 += e2[n1].2;
-                }
-                n1 = e2[n1].0;
-            }
-
-            while e2[n2].3 > cur_d {
-                if e2[n2].1 == x {
-                    c2 += y;
-                } else {
-                    c2 += e2[n2].2;
-                }
-                n2 = e2[n2].0;
-            }
-            // debug!(n1, n2, cur_d, c1, c2);
-
-            if n1 == n2 {
-                puts!("{}", c1+c2);
-                break;
-            } else {
-                cur_d -= 1;
-            }
-        }
+        let du = dist[u] - mdist[u][&x] + mnums[u][&x] * y;
+        let dv = dist[v] - mdist[v][&x] + mnums[v][&x] * y;
+        let dw = dist[w] - mdist[w][&x] + mnums[w][&x] * y;
+        puts!("{}", du + dv - 2 * dw);
     }
 }
