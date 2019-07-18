@@ -71,50 +71,6 @@ macro_rules! debug {
 use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
-use std::collections::VecDeque;
-
-struct SlidingWindowQ<F> {
-    q: VecDeque<usize>,
-    window: usize,
-    f: F
-}
-
-impl<F> SlidingWindowQ<F>
-where
-    F: Fn(usize,usize) -> bool
-{
-    fn new(window: usize, f: F) -> Self
-    {
-        SlidingWindowQ {
-            q: VecDeque::new(),
-            window: window,
-            f: f
-        }
-    }
-
-    fn push(&mut self, i: usize) {
-        while self.q.len() > 0 {
-            let j = *self.q.back().unwrap();
-
-            if (self.f)(i, j) {
-                self.q.pop_back();
-            } else {
-                break;
-            }
-        }
-        self.q.push_back(i);
-
-        let j = *self.q.front().unwrap();
-        if i >= self.window && j == i - self.window {
-            self.q.pop_front();
-        }
-    }
-
-    fn front(&self) -> usize {
-        *self.q.front().unwrap()
-    }
-}
-
 
 fn main() {
     let out = std::io::stdout();
@@ -134,44 +90,90 @@ fn main() {
       z: u64,
     }
 
-    let mut hs = vec![0; n*m];
+    let mut hs = vec![];
     let mut g = g0;
-    for i in 0..n*m {
-        hs[i] = g;
+    for _ in 0..n*m {
+        hs.push(g);
         g = (g * x  + y) % z;
     }
 
-    const INF: u64 = 1 << 50;
-    let mut mins = vec![INF; n*m];
+    use std::collections::BTreeMap;
 
-    // スライド最小値
-    use std::collections::VecDeque;
+
+    const INF: u64 = 1 << 60;
+    let mut mins = vec![vec![INF; m]; n];
+
     for i in 0..n {
-        let f = |a, b| hs[i*m + a] <= hs[i*m + b];
-        let mut q = SlidingWindowQ::new(b, f);
-        for j in 0..m {
-            q.push(j);
-            if j >= b-1 {
-                let min_j = q.front();
-                mins[i*m + j] = hs[i*m + min_j];
+        let mut bs = BTreeMap::new();
+        for j in 0..b {
+            let idx = i*m + j;
+            *bs.entry(hs[idx]).or_insert(0) += 1;
+        }
+
+        for j in 0..m-b+1 {
+            if j > 0 {
+                // Update map
+                let idx = i*m + j-1;
+                let cnt = bs[&hs[idx]];
+                if cnt == 1 {
+                    bs.remove(&hs[idx]);
+                } else {
+                    *bs.entry(hs[idx]).or_insert(0) -= 1;
+                }
+
+                let idx = i*m + j+b-1;
+                *bs.entry(hs[idx]).or_insert(0) += 1;
             }
+            let (&v, _) = bs.iter().next().unwrap();
+            mins[i][j] = v;
         }
     }
 
+    // debug!(n, m, a, b);
+    // for i in 0..n {
+    //     for j in 0..m {
+    //         print!("{} ", hs[ n*i + j ])
+    //     }
+    //     println!();
+    // }
+    // println!("{}", "-------------------------");
+
+    // for i in 0..n {
+    //     for j in 0..m {
+    //         if mins[i][j] == INF {
+    //             print!("{} ", -1);
+    //         } else {
+    //             print!("{} ", mins[i][j]);
+    //         }
+    //     }
+    //     println!();
+    // }
+
     let mut ans = 0;
-    assert!(mins.len() == n*m);
-    for j in b-1..m {
-        let f = |a, b| mins[a*m + j] <= mins[b*m + j];
-        let mut q = SlidingWindowQ::new(a, f);
-        for i in 0..n {
-            q.push(i);
-            if i >= a-1 {
-                let min_i = q.front();
-                let v = mins[min_i * m + j];
-                ans += v;
+    for j in 0..m-b+1 {
+        let mut bs = BTreeMap::new();
+        for i in 0..a {
+            *bs.entry(mins[i][j]).or_insert(0) += 1;
+        }
+
+        for i in 0..n-a+1 {
+            if i > 0 {
+                // Update map
+                let prev = mins[i-1][j];
+                let cnt = bs[&prev];
+                if cnt == 1 {
+                    bs.remove(&prev);
+                } else {
+                    *bs.entry(prev).or_insert(0) -= 1;
+                }
+
+                *bs.entry(mins[i + a - 1][j]).or_insert(0) += 1;
             }
+
+            let (&v, _) = bs.iter().next().unwrap();
+
+            ans += v;
         }
     }
     puts!("{}", ans);
 }
-

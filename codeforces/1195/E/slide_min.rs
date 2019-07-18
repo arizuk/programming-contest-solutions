@@ -71,50 +71,6 @@ macro_rules! debug {
 use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
-use std::collections::VecDeque;
-
-struct SlidingWindowQ<F> {
-    q: VecDeque<usize>,
-    window: usize,
-    f: F
-}
-
-impl<F> SlidingWindowQ<F>
-where
-    F: Fn(usize,usize) -> bool
-{
-    fn new(window: usize, f: F) -> Self
-    {
-        SlidingWindowQ {
-            q: VecDeque::new(),
-            window: window,
-            f: f
-        }
-    }
-
-    fn push(&mut self, i: usize) {
-        while self.q.len() > 0 {
-            let j = *self.q.back().unwrap();
-
-            if (self.f)(i, j) {
-                self.q.pop_back();
-            } else {
-                break;
-            }
-        }
-        self.q.push_back(i);
-
-        let j = *self.q.front().unwrap();
-        if i >= self.window && j == i - self.window {
-            self.q.pop_front();
-        }
-    }
-
-    fn front(&self) -> usize {
-        *self.q.front().unwrap()
-    }
-}
-
 
 fn main() {
     let out = std::io::stdout();
@@ -134,44 +90,84 @@ fn main() {
       z: u64,
     }
 
-    let mut hs = vec![0; n*m];
+    let mut hs = vec![vec![0; m]; n];
     let mut g = g0;
     for i in 0..n*m {
-        hs[i] = g;
+        let a = i/m;
+        let b = i%m;
+        hs[a][b] = g;
         g = (g * x  + y) % z;
     }
 
-    const INF: u64 = 1 << 50;
-    let mut mins = vec![INF; n*m];
+    // debug!(n, m, a, b, hs);
+
+    let mut min_table = vec![];
 
     // スライド最小値
     use std::collections::VecDeque;
     for i in 0..n {
-        let f = |a, b| hs[i*m + a] <= hs[i*m + b];
-        let mut q = SlidingWindowQ::new(b, f);
+        let mut q: VecDeque<(usize,usize)> = VecDeque::new();
+        let mut row_mins = vec![];
         for j in 0..m {
-            q.push(j);
-            if j >= b-1 {
-                let min_j = q.front();
-                mins[i*m + j] = hs[i*m + min_j];
+            let h = hs[i][j];
+
+            while q.len() > 0 {
+                let (x, y) = *q.back().unwrap();
+                if h <= hs[x][y] {
+                    q.pop_back();
+                } else {
+                    break;
+                }
             }
+            q.push_back((i, j));
+
+            if j < b-1 {
+                continue;
+            }
+            if j >= b {
+                let (_,y) = *q.front().unwrap();
+                if y == j-b {
+                    q.pop_front();
+                }
+            }
+
+            // debug!(i, j, q);
+            let (x,y) = *q.front().unwrap();
+            row_mins.push(hs[x][y]);
         }
+        min_table.push(row_mins);
     }
 
     let mut ans = 0;
-    assert!(mins.len() == n*m);
-    for j in b-1..m {
-        let f = |a, b| mins[a*m + j] <= mins[b*m + j];
-        let mut q = SlidingWindowQ::new(a, f);
+    for j in 0..m-b+1 {
+        let mut q: VecDeque<(usize,usize)> = VecDeque::new();
         for i in 0..n {
-            q.push(i);
-            if i >= a-1 {
-                let min_i = q.front();
-                let v = mins[min_i * m + j];
-                ans += v;
+            let h = min_table[i][j];
+
+            while q.len() > 0 {
+                let (x, y) = *q.back().unwrap();
+                if h <= min_table[x][y] {
+                    q.pop_back();
+                } else {
+                    break;
+                }
             }
+            q.push_back((i, j));
+
+            if i < a-1 {
+                continue;
+            }
+            if i >= a {
+                let (x,_) = *q.front().unwrap();
+                if x == i-a {
+                    q.pop_front();
+                }
+            }
+
+            let (x,y) = *q.front().unwrap();
+            ans += min_table[x][y];
+
         }
     }
     puts!("{}", ans);
 }
-
