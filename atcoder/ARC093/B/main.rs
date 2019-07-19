@@ -72,51 +72,6 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
-pub mod ds {
-    use std::collections::VecDeque;
-    pub struct SlidingWindowQ<F> {
-        q: VecDeque<usize>,
-        window: usize,
-        cur: usize,
-        f: F,
-    }
-    impl<F> SlidingWindowQ<F>
-    where
-        F: Fn(usize, usize) -> bool,
-    {
-        pub fn new(window: usize, f: F) -> Self {
-            SlidingWindowQ {
-                q: VecDeque::new(),
-                window: window,
-                f: f,
-                cur: 0,
-            }
-        }
-        pub fn next(&mut self) -> usize {
-            let i = self.cur;
-            self.cur += 1;
-            while self.q.len() > 0 {
-                let j = *self.q.back().unwrap();
-                if (self.f)(i, j) {
-                    self.q.pop_back();
-                } else {
-                    break;
-                }
-            }
-            self.q.push_back(i);
-            let j = *self.q.front().unwrap();
-            if i >= self.window && j == i - self.window {
-                self.q.pop_front();
-            }
-            self.front()
-        }
-        pub fn front(&self) -> usize {
-            *self.q.front().unwrap()
-        }
-    }
-}
-
-
 fn main() {
     let out = std::io::stdout();
     let mut out = BufWriter::new(out.lock());
@@ -125,53 +80,53 @@ fn main() {
     }
 
     input!{
-      n: usize,
-      m: usize,
-      a: usize,
-      b: usize,
-      g0: u64,
-      x: u64,
-      y: u64,
-      z: u64,
+      mut a: usize1,
+      mut b: usize1,
     }
+    let mut w_zone = vec![vec!['.'; 100]; 50];
+    for i in 0..49 {
+        if a == 0 {
+            break;
+        }
 
-    let mut hs = vec![0; n*m];
-    let mut g = g0;
-    for i in 0..n*m {
-        hs[i] = g;
-        g = (g * x  + y) % z;
-    }
-
-    const INF: u64 = 1 << 50;
-    let mut mins = vec![INF; n*m];
-
-    use ds::SlidingWindowQ;
-
-    // スライド最小値
-    for i in 0..n {
-        let f = |a, b| hs[i*m + a] <= hs[i*m + b];
-        let mut q = SlidingWindowQ::new(b, f);
-        for j in 0..m {
-            let min_idx = q.next();
-            if j >= b-1 {
-                mins[i*m + j] = hs[i*m + min_idx];
+        let mut j = i%2;
+        while j < 100 {
+            w_zone[i][j] = '#';
+            j += 2;
+            a -= 1;
+            if a == 0 {
+                break;
             }
         }
     }
 
-    let mut ans = 0;
-    assert!(mins.len() == n*m);
-    for j in b-1..m {
-        let f = |a, b| mins[a*m + j] <= mins[b*m + j];
-        let mut q = SlidingWindowQ::new(a, f);
-        for i in 0..n {
-            let min_idx = q.next();
-            if i >= a-1 {
-                let v = mins[min_idx * m + j];
-                ans += v;
+    let mut b_zone = vec![vec!['#'; 100]; 50];
+    for i in 1..50 {
+        if b == 0 {
+            break;
+        }
+
+        let mut j = i%2;
+        while j < 100 {
+            b_zone[i][j] = '.';
+            j += 2;
+            b -= 1;
+            if b == 0 {
+                break;
             }
         }
     }
-    puts!("{}", ans);
+
+    for i in 0..50 {
+        for j in 0..100 {
+            print!("{}", w_zone[i][j]);
+        }
+        println!();
+    }
+    for i in 0..50 {
+        for j in 0..100 {
+            print!("{}", b_zone[i][j]);
+        }
+        println!();
+    }
 }
-
