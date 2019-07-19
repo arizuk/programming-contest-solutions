@@ -83,15 +83,18 @@ fn main() {
       mut a: usize1,
       mut b: usize1,
     }
-    let mut w_zone = vec![vec!['.'; 100]; 50];
+    let mut w_zone = vec![vec!['#'; 100]; 50];
     for i in 0..49 {
         if a == 0 {
             break;
         }
+        if i%2 == 1 {
+            continue;
+        }
 
-        let mut j = i%2;
+        let mut j = 0;
         while j < 100 {
-            w_zone[i][j] = '#';
+            w_zone[i][j] = '.';
             j += 2;
             a -= 1;
             if a == 0 {
@@ -100,15 +103,18 @@ fn main() {
         }
     }
 
-    let mut b_zone = vec![vec!['#'; 100]; 50];
+    let mut b_zone = vec![vec!['.'; 100]; 50];
     for i in 1..50 {
         if b == 0 {
             break;
         }
+        if i%2 == 0 {
+            continue;
+        }
 
-        let mut j = i%2;
+        let mut j = 0;
         while j < 100 {
-            b_zone[i][j] = '.';
+            b_zone[i][j] = '#';
             j += 2;
             b -= 1;
             if b == 0 {
@@ -117,6 +123,7 @@ fn main() {
         }
     }
 
+    println!("{} {}", 100, 100);
     for i in 0..50 {
         for j in 0..100 {
             print!("{}", w_zone[i][j]);
