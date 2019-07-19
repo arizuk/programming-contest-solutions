@@ -29,11 +29,6 @@ macro_rules! input_inner {
         let $var = read_value!($next, $t);
         input_inner!{$next $($r)*}
     };
-
-    ($next:expr, mut $var:ident : $t:tt $($r:tt)*) => {
-        let mut $var = read_value!($next, $t);
-        input_inner!{$next $($r)*}
-    };
 }
 
 #[allow(unused_macros)]
@@ -62,61 +57,51 @@ macro_rules! read_value {
 #[allow(unused_macros)]
 macro_rules! debug {
     ($($a:expr),*) => {
-        #[cfg(debug_assertions)]
-        writeln!(&mut std::io::stderr(), concat!("[DEBUG] ", $(stringify!($a), "={:?} "),*), $($a),*);
+        println!(concat!($(stringify!($a), "={:?} "),*), $($a),*);
     }
 }
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
-#[allow(unused_imports)]
-use std::io::{stdout, stdin, BufWriter, Write};
 
 fn main() {
-    let out = std::io::stdout();
-    let mut out = BufWriter::new(out.lock());
-    macro_rules! puts {
-        ($($format:tt)*) => (write!(out,$($format)*).unwrap());
-    }
-    macro_rules! put {
-        ($($format:tt)*) => (write!(out,$($format)*).unwrap());
-    }
-
     input!{
       n: usize,
     }
-    let mut m = 0;
-    for s in 2.. {
-        let e = s*(s-1);
-        if e == 2*n {
-            m = s;
-            break;
-        } else if e > 2*n {
-            break;
-        }
+    let mut w = 1;
+    let mut s = 0;
+    while s < n {
+        s += w;
+        w += 1;
     }
-    if m == 0 {
-        return puts!("{}", "No");
+    w -= 1;
+    if n != s {
+        println!("{}", "No");
+        return;
     }
 
-    puts!("{}", "Yes");
-    puts!("{}", m);
-
-    let mut ans = vec![vec![0;m-1]; m];
-    let mut cur = 0;
-    for i in 0..m-1 {
-        for j in 0..m-1-i {
-            cur += 1;
-            ans[i][j+i] = cur;
-            ans[j+1+i][i] = cur;
+    let mut t = vec![vec![0; w]; w+1];
+    {
+        let mut w = w;
+        let mut i = 0;
+        let mut s = 1;
+        while w > 0 {
+            for (j, v) in (s..s+w).enumerate() {
+                t[i][i+j] = v;
+                t[i+j+1][i] = v;
+            }
+            s += w;
+            w -= 1;
+            i += 1;
         }
     }
-    debug!(ans);
-    for a in ans {
-        put!("{} ", a.len());
-        for v in a {
-            put!("{} ", v);
+    println!("Yes");
+    println!("{}", w+1);
+    for i in 0..w+1 {
+        print!("{}", w);
+        for j in 0..w {
+            print!(" {}", t[i][j]);
         }
-        puts!("");
+        println!();
     }
 }
