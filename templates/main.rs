@@ -76,6 +76,6 @@ fn main() {
     let out = std::io::stdout();
     let mut out = BufWriter::new(out.lock());
     macro_rules! puts {
-        ($($format:tt)*) => (writeln!(out,$($format)*).unwrap());
+        ($($format:tt)*) => (write!(out,$($format)*).unwrap());
     }
 }
