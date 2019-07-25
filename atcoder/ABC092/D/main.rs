@@ -72,6 +72,20 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
+pub fn lower_bound<T: Ord>(a: &Vec<T>, x: &T) -> usize {
+    use std::cmp::Ordering;
+    let mut l = 0;
+    let mut r = a.len();
+    while l != r {
+        let m = l + (r - l) / 2;
+        match a[m].cmp(x) {
+            Ordering::Less => l = m + 1,
+            Ordering::Equal | Ordering::Greater => r = m,
+        }
+    }
+    l
+}
+
 fn main() {
     let out = std::io::stdout();
     let mut out = BufWriter::new(out.lock());
@@ -81,46 +95,36 @@ fn main() {
 
     input!{
       n: usize,
-      k: usize,
+      aa: [usize; n],
+      bb: [usize; n],
     }
 
-    const MOD: usize = 1e9 as usize + 7;
+    let mut ans = 0;
+    for d in 0..29 {
+        let t = 1 << d;
+        let mut vs = vec![];
+        for &b in &bb {
+            vs.push(b % (t << 1));
+        }
+        vs.sort();
 
-    // dp[i][j][k]
-    let mut dp = vec![vec![vec![0; k+1]; n+1]; n+1];
-    dp[0][0][0] = 1;
-    for i in 0..n {
-        for j in 0..n+1 {
-            for l in 0..k+1 {
-                if l+2*j > k {
-                    continue;
-                }
+        let mut ones = 0;
+        for i in 0..n {
+            let a = aa[i] % (t << 1);
+            // (a+b) [T, 2T)
+            let l1 = if t >= a { lower_bound(&vs, &(t-a)) } else { 0 };
+            let r1 = lower_bound(&vs, &(2*t-a));
 
-                // 保留
-                if j+1 <= n {
-                    dp[i+1][j+1][l + 2*j] += dp[i][j][l];
-                    dp[i+1][j+1][l + 2*j] %= MOD;
-                }
+            // (a+b) [3T, 4T)
+            let l2 = lower_bound(&vs, &(3*t-a));
+            let r2 = lower_bound(&vs, &(4*t-a));
 
-                // iを埋める
-                dp[i+1][j][l + 2*j] += dp[i][j][l];
-                dp[i+1][j][l + 2*j] %= MOD;
+            ones += r1-l1 + r2-l2;
+        }
 
-                // 保留で箱iを埋める / i は保留
-                dp[i+1][j][l + 2*j] += dp[i][j][l] * j % MOD;
-                dp[i+1][j][l + 2*j] %= MOD;
-
-                if j > 0 {
-                    // 保留で箱iを埋める / i を別の箱にいれる
-                    dp[i+1][j-1][l + 2*j] += dp[i][j][l] * j % MOD * j % MOD;
-                    dp[i+1][j-1][l + 2*j] %= MOD;
-                }
-
-                // i を別の箱にいれる
-                dp[i+1][j][l + 2*j] += dp[i][j][l] * j % MOD;
-                dp[i+1][j][l + 2*j] %= MOD;
-            }
+        if ones%2 == 1 {
+            ans += 1 << d;
         }
     }
-    puts!("{}\n", dp[n][0][k]);
+    puts!("{}\n", ans);
 }
