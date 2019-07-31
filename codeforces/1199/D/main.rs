@@ -115,7 +115,7 @@ fn main() {
         last_updates[i] = (0, aa[i]);
     }
 
-    let mut whole_updates = vec![0; n];
+    let mut whole_updates = vec![0; q];
 
     for i in 0..q {
         let t: usize = sc.read();
@@ -130,11 +130,10 @@ fn main() {
     }
 
     let mut cur = whole_updates[whole_updates.len()-1];
-    for i in 0..q {
+    for i in (0..q).rev() {
         cur = max(cur, whole_updates[i]);
         whole_updates[i] = cur;
     }
-
     let mut ans = vec![0; n];
     for i in 0..n {
         let (query_after, value) = last_updates[i];
