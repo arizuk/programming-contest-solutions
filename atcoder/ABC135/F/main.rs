@@ -72,6 +72,7 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
+// KMP法
 fn make_table(s: &Vec<char>) -> Vec<i64> {
     let n = s.len();
     let mut t = vec![0; n+1];
@@ -83,9 +84,10 @@ fn make_table(s: &Vec<char>) -> Vec<i64> {
         if prev == s[pos] {
             pos += 1;
             t[i] = pos as i64;
+        } else if pos > 0 {
+            pos = t[pos] as usize;
         } else {
             pos = 0;
-            t[i] = 0;
         }
     }
     t
@@ -106,6 +108,8 @@ fn main() {
     let m = t.len();
     let tbl = make_table(&t);
 
+    debug!(tbl);
+
     let mut s_idx = 0;
     let mut offset = 0;
     let mut partial = vec![false; n];
@@ -125,7 +129,6 @@ fn main() {
         s_idx = ((s_idx + t_idx) as i64 - tbl[t_idx]) as usize;
         offset = max(tbl[t_idx], 0) as usize;
     }
-
 
     use std::collections::HashSet;
     let mut cnts = vec![-1; n];
@@ -150,6 +153,7 @@ fn main() {
             cnts[cur%n] = cnt;
         }
     }
+    // debug!(cnts);
     let ans = max(*cnts.iter().max().unwrap(), 0);
     puts!("{}\n", ans);
 }
