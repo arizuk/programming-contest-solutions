@@ -71,59 +71,48 @@ macro_rules! debug {
 use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
+use std::collections::BinaryHeap;
+use std::cmp::Ordering;
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+struct Rev(usize);
 
-fn check_needed(aa: &Vec<usize>, k: usize, i: usize) -> bool {
-    let n = aa.len();
-    let mut dp = vec![vec![false; k+1]; n+1];
-    dp[0][0] = true;
-    for j in 0..n {
-        let a = aa[j];
-        if i == j {
-            for cur_k in 0..k {
-                dp[j+1][cur_k] |= dp[j][cur_k];
-            }
-        } else {
-            for cur_k in 0..k {
-                let idx = min(k, cur_k+a);
-                dp[j+1][cur_k] |= dp[j][cur_k];
-                dp[j+1][idx] |= dp[j][cur_k];
-            }
-        }
+impl Ord for Rev {
+    fn cmp(&self, other: &Rev) -> Ordering {
+        other.0.cmp(&self.0)
     }
-
-    let lower = if k>aa[i] { k-aa[i] } else { 0 };
-    // for i in 0..n {
-    //     debug!(i, dp[i]);
-    // }
-
-    // debug!(i, lower, aa[i], k);
-    // debug!(&dp[n][lower..k]);
-    for j in lower..k {
-        // iを入れるとKを超える集合が存在する=必要なカード
-        if dp[n][j] {
-            return true
-        }
-    }
-    false
 }
 
-#[doc = " [l, r)"]
-pub fn binary_search_by<F>(mut l: usize, mut r: usize, f: &F) -> usize
-where
-    F: Fn(usize) -> bool,
-{
-    assert!(l <= r);
-    while r != l {
-        let m = l + (r - l) / 2;
-        if f(m) {
-            r = m;
-        } else {
-            l = m + 1;
+impl PartialOrd for Rev {
+    fn partial_cmp(&self, other: &Rev) -> Option<Ordering> {
+        Some(other.0.cmp(&self.0))
+    }
+}
+
+const INF: usize = 1 << 50;
+
+fn dijkstra(edges: &Vec<Vec<(usize,usize)>>, n:usize,s:usize,t:usize) -> Vec<usize> {
+    let mut q = BinaryHeap::new();
+    q.push((Rev(0),s));
+    let mut dist = vec![INF; n];
+
+    while q.len() > 0 {
+        let (Rev(cur_dist), node) = q.pop().unwrap();
+        if dist[node] < cur_dist {
+            continue;
+        }
+        dist[node] = cur_dist;
+        for &(nx_node, nx_dist) in edges[node].iter() {
+            if cur_dist + nx_dist < dist[nx_node] {
+                q.push(
+                    (Rev(cur_dist + nx_dist), (nx_node))
+                );
+            }
         }
     }
-    r
+    dist
 }
+
 
 fn main() {
     let out = std::io::stdout();
@@ -134,22 +123,38 @@ fn main() {
 
     input!{
       n: usize,
-      k: usize,
-      mut aa: [usize; n],
-    }
-    aa.sort();
-
-    let mut ok = n;
-    let mut ng = 0;
-    while ok != ng {
-        let mid = (ok + ng) / 2;
-        if check_needed(&aa, k, mid) {
-            ok = mid;
-        } else {
-            ng = mid + 1;
-        }
+      m: usize,
+      s: usize1,
+      t: usize1,
+      uvabs: [(usize1,usize1,usize,usize); m]
     }
 
-    // debug!(ans);
-    puts!("{}\n", ok);
+    let mut yen_es = vec![vec![]; n];
+    let mut snuke_ens = vec![vec![]; n];
+    for &(u, v, a, b) in uvabs.iter() {
+        yen_es[u].push((v,a));
+        yen_es[v].push((u,a));
+
+        snuke_ens[u].push((v,b));
+        snuke_ens[v].push((u,b));
+    }
+
+    let dist1 = dijkstra(&yen_es, n, s, t);
+    let dist2 = dijkstra(&snuke_ens, n, t, s);
+    let dist: Vec<_> = (0..n).map(|i| dist1[i] + dist2[i]).collect();
+
+
+    let mut heap = BinaryHeap::new();
+    let mut ans = vec![];
+    for i in (0..n).rev() {
+        heap.push( Rev(dist[i]) );
+        let Rev(peek) = *heap.peek().unwrap();
+        ans.push(peek);
+    }
+    ans.reverse();
+
+    let ttl = 1e15 as usize;
+    for a in ans {
+        puts!("{}\n", ttl-a);
+    }
 }

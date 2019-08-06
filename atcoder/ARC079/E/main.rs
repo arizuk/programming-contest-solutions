@@ -72,57 +72,15 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
-
-fn check_needed(aa: &Vec<usize>, k: usize, i: usize) -> bool {
-    let n = aa.len();
-    let mut dp = vec![vec![false; k+1]; n+1];
-    dp[0][0] = true;
-    for j in 0..n {
-        let a = aa[j];
-        if i == j {
-            for cur_k in 0..k {
-                dp[j+1][cur_k] |= dp[j][cur_k];
-            }
-        } else {
-            for cur_k in 0..k {
-                let idx = min(k, cur_k+a);
-                dp[j+1][cur_k] |= dp[j][cur_k];
-                dp[j+1][idx] |= dp[j][cur_k];
-            }
+fn ok(aa: &Vec<u64>) -> bool {
+    let n = aa.len() as u64;
+    let mut ok = true;
+    for &a in aa.iter() {
+        if a >= n {
+            ok = false;
         }
     }
-
-    let lower = if k>aa[i] { k-aa[i] } else { 0 };
-    // for i in 0..n {
-    //     debug!(i, dp[i]);
-    // }
-
-    // debug!(i, lower, aa[i], k);
-    // debug!(&dp[n][lower..k]);
-    for j in lower..k {
-        // iを入れるとKを超える集合が存在する=必要なカード
-        if dp[n][j] {
-            return true
-        }
-    }
-    false
-}
-
-#[doc = " [l, r)"]
-pub fn binary_search_by<F>(mut l: usize, mut r: usize, f: &F) -> usize
-where
-    F: Fn(usize) -> bool,
-{
-    assert!(l <= r);
-    while r != l {
-        let m = l + (r - l) / 2;
-        if f(m) {
-            r = m;
-        } else {
-            l = m + 1;
-        }
-    }
-    r
+    ok
 }
 
 fn main() {
@@ -133,23 +91,19 @@ fn main() {
     }
 
     input!{
-      n: usize,
-      k: usize,
-      mut aa: [usize; n],
+      n: u64,
+      mut aa: [u64; n],
     }
-    aa.sort();
 
-    let mut ok = n;
-    let mut ng = 0;
-    while ok != ng {
-        let mid = (ok + ng) / 2;
-        if check_needed(&aa, k, mid) {
-            ok = mid;
-        } else {
-            ng = mid + 1;
+    let mut ans = 0;
+    while !ok(&aa) {
+        let s: u64 = aa.iter().map(|v| v/n).sum();
+        for i in 0..n as usize {
+            let temp = aa[i]/n;
+            ans += temp;
+            aa[i] -= temp * n;
+            aa[i] += s - temp;
         }
     }
-
-    // debug!(ans);
-    puts!("{}\n", ok);
+    puts!("{}\n", ans);
 }
