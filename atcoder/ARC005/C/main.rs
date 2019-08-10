@@ -141,7 +141,7 @@ fn main() {
 
     while q.len() > 0 {
         let (Rev(cur_cost), (x,y)) = q.pop().unwrap();
-        if costs[x][y] < cur_cost {
+        if costs[x][y] < cur_cost { // <= のが良さそう
             continue;
         }
 

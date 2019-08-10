@@ -134,7 +134,7 @@ fn main() {
 
         while q.len() > 0 {
             let (Rev(cur_dist), node) = q.pop().unwrap();
-            if dist[node] < cur_dist {
+            if dist[node] < cur_dist { // <= のが良さそう
                 continue;
             }
             dist[node] = cur_dist;

@@ -125,7 +125,7 @@ fn main() {
 
         while q.len() > 0 {
             let (Rev(d), cur) = q.pop().unwrap();
-            if dist[cur] < d {
+            if dist[cur] < d { // <= のが良さそう
                 continue;
             }
 
