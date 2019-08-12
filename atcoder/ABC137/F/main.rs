@@ -72,7 +72,52 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
-const NINF: i64 = -1 * (1 << 60);
+fn mod_pow(mut cur: usize, mut e: usize, p: usize) -> usize {
+    let mut result = 1;
+    while e > 0 {
+        if e & 1 == 1 {
+            result = (result * cur) % p;
+        }
+        cur = (cur * cur) % p;
+        e >>= 1;
+    }
+    result
+}
+
+#[allow(dead_code)]
+pub struct ModFactorial {
+    fact: Vec<usize>,
+    inv: Vec<usize>,
+    finv: Vec<usize>,
+    modulo: usize,
+}
+impl ModFactorial {
+    pub fn new(max_value: usize, modulo: usize) -> Self {
+        let mut fact = vec![0; max_value + 1];
+        let mut inv = vec![0; max_value + 1];
+        let mut finv = vec![0; max_value + 1];
+        fact[0] = 1;
+        fact[1] = 1;
+        finv[0] = 1;
+        finv[1] = 1;
+        inv[1] = 1;
+        for i in 2..max_value + 1 {
+            fact[i] = fact[i - 1] * i % modulo;
+            inv[i] = modulo - inv[modulo % i] * (modulo / i) % modulo;
+            finv[i] = finv[i - 1] * inv[i] % modulo;
+        }
+        ModFactorial {
+            fact: fact,
+            inv: inv,
+            finv: finv,
+            modulo: modulo,
+        }
+    }
+    pub fn combination(&self, n: usize, k: usize) -> usize {
+        assert!(n >= k);
+        self.fact[n] * self.finv[n - k] % self.modulo * self.finv[k] % self.modulo
+    }
+}
 
 fn main() {
     let out = std::io::stdout();
@@ -82,31 +127,36 @@ fn main() {
     }
 
     input!{
-      n: usize,
-      m: usize,
-      p: i64,
-      abcs: [(usize1,usize1,i64); m],
+      p: usize,
+      aa: [usize; p],
     }
 
-    // ベルマンフォード
-    let mut dist = vec![NINF; n];
-    dist[0] = 0;
-    let mut ans = dist[n-1];
-    for i in 0..(n*2) {
-        for e in 0..m {
-            let (a, b, c) = abcs[e];
-            let c = c-p;
-            if dist[a] != NINF && dist[b] < dist[a] + c {
-                dist[b] = dist[a] + c;
+    let mut bs = vec![0; p];
+    let n = p-1;
+    let fact = ModFactorial::new(n, p);
+    for i in 0..p {
+        if aa[i] == 1 {
+            bs[0] += 1;
+            bs[0] %= p;
+
+            for j in 0..n+1 {
+                let idx = n-j;
+                let temp = fact.combination(n, j) * mod_pow(i, j, p) % p;
+                if j % 2 == 0 {
+                    bs[idx] += p - temp;
+                } else {
+                    bs[idx] += temp;
+                }
+                bs[idx] %= p;
             }
-        }
-        if i >= n {
-            if ans != dist[n-1] {
-                return puts!("{}\n", -1);
-            }
-        } else {
-            ans = dist[n-1];
         }
     }
-    puts!("{}\n", max(ans, 0));
+    for i in 0..bs.len() {
+        if i == bs.len() - 1 {
+            puts!("{}", bs[i]);
+        } else {
+            puts!("{} ", bs[i]);
+        }
+    }
+    puts!("{}\n", "");
 }

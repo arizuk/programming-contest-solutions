@@ -72,7 +72,7 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
-const NINF: i64 = -1 * (1 << 60);
+const INF: i64 = (1 << 60);
 
 fn main() {
     let out = std::io::stdout();
@@ -89,14 +89,14 @@ fn main() {
     }
 
     // ベルマンフォード
-    let mut dist = vec![NINF; n];
+    let mut dist = vec![INF; n];
     dist[0] = 0;
     let mut ans = dist[n-1];
     for i in 0..(n*2) {
         for e in 0..m {
             let (a, b, c) = abcs[e];
-            let c = c-p;
-            if dist[a] != NINF && dist[b] < dist[a] + c {
+            let c = -1 * (c-p);
+            if dist[a] != INF && dist[b] > dist[a] + c {
                 dist[b] = dist[a] + c;
             }
         }
@@ -108,5 +108,5 @@ fn main() {
             ans = dist[n-1];
         }
     }
-    puts!("{}\n", max(ans, 0));
+    puts!("{}\n", max(-1 * ans, 0));
 }
