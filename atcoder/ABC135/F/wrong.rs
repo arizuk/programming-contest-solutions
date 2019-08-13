@@ -79,78 +79,47 @@ fn make_kmp_table(s: &Vec<char>) -> Vec<i64> {
     t[0] = -1;
 
     let mut pos = 0;
-    let mut i = 2;
-    while i <= n {
+    for i in 2..n+1 {
         let prev = s[i-1];
         if prev == s[pos] {
             pos += 1;
             t[i] = pos as i64;
-            i += 1;
         } else if pos > 0 {
-            // TODO: この処理の意味
             pos = t[pos] as usize;
         } else {
-            i += 1;
+            pos = 0;
         }
     }
     t
 }
 
-#[derive(Debug)]
-pub struct UnionFind {
-    par: Vec<usize>,
-    size: Vec<usize>,
-}
-impl UnionFind {
-    pub fn new(n: usize) -> UnionFind {
-        let mut vec = vec![0; n];
-        for i in 0..n {
-            vec[i] = i;
-        }
-        let size = vec![1; n];
-        UnionFind { par: vec, size: size }
-    }
-    pub fn find(&mut self, x: usize) -> usize {
-        if x == self.par[x] {
-            x
-        } else {
-            let par = self.par[x];
-            let res = self.find(par);
-            self.par[x] = res;
-            res
-        }
-    }
-    pub fn same(&mut self, a: usize, b: usize) -> bool {
-        self.find(a) == self.find(b)
-    }
-    pub fn unite(&mut self, a: usize, b: usize) {
-        let apar = self.find(a);
-        let bpar = self.find(b);
-        self.par[apar] = bpar;
-        self.size[bpar] = self.size[apar]  + self.size[bpar];
-    }
-}
-
 fn calc_maximum_length(partial: &Vec<bool>, n: usize, m: usize) -> i64 {
-    let mut uf = UnionFind::new(n);
+    use std::collections::HashSet;
+    let mut cnts = vec![-1; n];
     for i in 0..n {
-        let ni = (i + m) % n;
-        if partial[i] && partial[ni] {
-            if uf.same(i, ni) {
-                return -1;
-            } else {
-                uf.unite(i, ni);
+        if cnts[i] >= 0 {
+            continue;
+        }
+        let mut cur = i;
+        let mut seen = HashSet::new();
+        while partial[cur%n] {
+            let v = cur%n;
+            if seen.contains(&v) {
+                return -1
             }
+            seen.insert(v);
+            cur += m;
+        }
+        let mut cnt = 0;
+        while cur > i {
+            cur -= m;
+            cnt += 1;
+            cnts[cur%n] = cnt;
         }
     }
-    let mut ans = 0;
-    for i in 0..n {
-        if partial[i] {
-            let par = uf.find(i);
-            ans = max(ans, uf.size[par]);
-        }
-    }
-    ans as _
+    // debug!(cnts);
+    let ans = max(*cnts.iter().max().unwrap(), 0);
+    ans
 }
 
 fn main() {
@@ -164,11 +133,9 @@ fn main() {
       s: chars,
       t: chars,
     }
-
     let n = s.len();
     let m = t.len();
     let tbl = make_kmp_table(&t);
-    // debug!(tbl);
 
     let mut s_idx = 0;
     let mut offset = 0;
