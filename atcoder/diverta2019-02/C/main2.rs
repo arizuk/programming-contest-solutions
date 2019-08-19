@@ -69,39 +69,37 @@ macro_rules! debug {
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
+
 #[allow(unused_imports)]
-use std::io::{stdout, stdin, BufWriter, Write};
+use std::io::Write;
 
 fn main() {
-    let out = std::io::stdout();
-    let mut out = BufWriter::new(out.lock());
-    macro_rules! puts {
-        ($($format:tt)*) => (write!(out,$($format)*).unwrap());
-    }
-
     input!{
       n: usize,
       mut aa: [i64; n],
     }
     aa.sort();
-
-    let mut left = aa[0];
-    let mut right = aa[n-1];
-
-    let mut ops = vec![];
+    if aa.len() == 2 {
+        println!("{}", aa[1] - aa[0]);
+        println!("{} {}", aa[1], aa[0]);
+        return;
+    }
+    let mut r = aa[n-1];
+    let mut l = aa[0];
+    let mut cmd = vec![];
     for i in 1..n-1 {
-        if aa[i] < 0 {
-            ops.push((right, aa[i]));
-            right -= aa[i];
+        if aa[i] >= 0 {
+            cmd.push((l, aa[i]));
+            l -= aa[i];
         } else {
-            ops.push((left, aa[i]));
-            left -= aa[i];
+            cmd.push((r, aa[i]));
+            r -= aa[i];
         }
     }
-    ops.push((right, left));
-    let ans = right - left;
-    puts!("{}\n", ans);
-    for op in ops {
-        puts!("{} {}\n", op.0, op.1);
+    cmd.push((r, l));
+    r -= l;
+    println!("{}", r);
+    for (a, b) in cmd {
+        println!("{} {}", a, b);
     }
 }

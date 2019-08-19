@@ -126,18 +126,42 @@ impl ModFactorial {
     }
 }
 
-fn count_zeros(n: usize, d: usize) -> usize {
-    let mut dp = vec![vec![0; 2]; d+1];
+fn count_zeros(n: usize, d: usize) -> Vec<usize> {
+    let mut dp = vec![vec![0; d+1]; d+1];
+    dp[d][0] = 0;
+
+    let mut zeros = 0;
     for i in (0..d).rev() {
         let bit = 1 << i;
+
+        if bit & n > 0 {
+            // このタイミングで0にする場合は、低いことが確定する
+            dp[i][zeros+1] += 1;
+        } else {
+            zeros += 1;
+        }
+
+
+        // 確定済み
+        for nd in 0..d+1 {
+            // 1の場合
+            dp[i][nd] += dp[i+1][nd];
+
+            // 0の場合
+            if nd < d {
+                dp[i][nd+1] += dp[i+1][nd];
+            }
+        }
     }
+    dp[0][zeros] += 1;
+    dp[0].clone()
 }
 
 fn solve(n: usize) -> usize {
-    let fact = ModFactorial::new(30, MOD);
+    let fact = ModFactorial::new(50, MOD);
     let mut d = 1;
     let mut ans = 0;
-    while 2usize.pow(d) < n {
+    while 2usize.pow(d) <= n {
         let temp = 2usize.pow(d);
         if n >= temp*2 {
             for i in 0..d+1 {
@@ -145,10 +169,14 @@ fn solve(n: usize) -> usize {
             }
         } else {
             // 0の個数を数える
+            let zeros = count_zeros(n, d as _);
+            for i in 0..d+1 {
+                ans += zeros[i as usize] * 2usize.pow(i);
+            }
         }
         d += 1;
     }
-    1
+    ans
 }
 
 
@@ -163,7 +191,12 @@ fn main() {
       l: usize,
       r: usize,
     }
-    let v1 = solve(l);
+    // for i in 2..16 {
+    //     debug!(i, solve(i));
+    // }
+
+    let v1 = solve(l-1);
     let v2 = solve(r);
+    debug!(v2, v1);
     puts!("{}\n", v2-v1);
 }

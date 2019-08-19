@@ -72,6 +72,8 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
+const MOD: usize = 1e9 as usize + 7;
+
 fn main() {
     let out = std::io::stdout();
     let mut out = BufWriter::new(out.lock());
@@ -80,28 +82,39 @@ fn main() {
     }
 
     input!{
-      n: usize,
-      mut aa: [i64; n],
+      d: usize,
+      s: chars,
     }
-    aa.sort();
+    let s: Vec<_> = s.iter().map(|&c| (c as u8 - '0' as u8) as usize).collect();
+    let n = s.len();
+    let mut dp0 = vec![vec![0; d]; 2];
+    let mut dp1 = vec![vec![0; d]; 2];
 
-    let mut left = aa[0];
-    let mut right = aa[n-1];
+    dp0[0][0] = 1;
+    for i in 0..n {
+        let idx = i%2;
+        let digit = s[i];
 
-    let mut ops = vec![];
-    for i in 1..n-1 {
-        if aa[i] < 0 {
-            ops.push((right, aa[i]));
-            right -= aa[i];
-        } else {
-            ops.push((left, aa[i]));
-            left -= aa[i];
+        for m in 0..d {
+            dp0[1-idx][m] = 0;
+            dp1[1-idx][m] = 0;
+        }
+
+        for m in 0..d {
+
+            dp0[1-idx][ (m + digit) %d  ] += dp0[idx][m];
+            dp0[1-idx][ (m + digit) %d  ] %= MOD;
+
+            for i in 0..10 {
+                if i < digit {
+                    dp1[1-idx][ (m + i) %d  ] += dp0[idx][m];
+                    dp1[1-idx][ (m + i) %d  ] %= MOD;
+                }
+                dp1[1-idx][ (m + i) %d  ] += dp1[idx][m];
+                dp1[1-idx][ (m + i) %d  ] %= MOD;
+            }
         }
     }
-    ops.push((right, left));
-    let ans = right - left;
+    let ans = ((dp0[n%2][0] + dp1[n%2][0]) % MOD + MOD - 1) % MOD;
     puts!("{}\n", ans);
-    for op in ops {
-        puts!("{} {}\n", op.0, op.1);
-    }
 }

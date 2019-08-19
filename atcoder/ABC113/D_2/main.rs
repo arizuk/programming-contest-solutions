@@ -80,28 +80,38 @@ fn main() {
     }
 
     input!{
-      n: usize,
-      mut aa: [i64; n],
+      h: usize,
+      w: usize,
+      k: usize,
     }
-    aa.sort();
 
-    let mut left = aa[0];
-    let mut right = aa[n-1];
+    const MOD: usize = 1e9 as usize + 7;
+    let mut dp = vec![vec![0; w]; h+1];
+    dp[0][0] = 1;
 
-    let mut ops = vec![];
-    for i in 1..n-1 {
-        if aa[i] < 0 {
-            ops.push((right, aa[i]));
-            right -= aa[i];
-        } else {
-            ops.push((left, aa[i]));
-            left -= aa[i];
+    if w == 1 {
+        return puts!("{}\n", 1);
+    }
+
+    for i in 0..h {
+        for bit in 0..(1 << (w-1)) {
+            let lines: Vec<bool> = (0..w-1).map(|i| (bit & (1 << i) > 0)).collect();
+            if lines.windows(2).any(|p| p[0] && p[1]) {
+                continue;
+            }
+            for cur in 0..w {
+                if cur < w-1 && lines[cur] {
+                    dp[i+1][cur+1] += dp[i][cur];
+                    dp[i+1][cur+1] %= MOD;
+                } else if cur > 0 && lines[cur-1] {
+                    dp[i+1][cur-1] += dp[i][cur];
+                    dp[i+1][cur-1] %= MOD;
+                } else {
+                    dp[i+1][cur] += dp[i][cur];
+                    dp[i+1][cur] %= MOD;
+                }
+            }
         }
     }
-    ops.push((right, left));
-    let ans = right - left;
-    puts!("{}\n", ans);
-    for op in ops {
-        puts!("{} {}\n", op.0, op.1);
-    }
+    puts!("{}\n", dp[h][k-1]);
 }

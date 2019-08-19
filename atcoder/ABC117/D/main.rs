@@ -29,6 +29,11 @@ macro_rules! input_inner {
         let $var = read_value!($next, $t);
         input_inner!{$next $($r)*}
     };
+
+    ($next:expr, mut $var:ident : $t:tt $($r:tt)*) => {
+        let mut $var = read_value!($next, $t);
+        input_inner!{$next $($r)*}
+    };
 }
 
 #[allow(unused_macros)]
@@ -64,37 +69,45 @@ macro_rules! debug {
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
-
 #[allow(unused_imports)]
-use std::io::Write;
+use std::io::{stdout, stdin, BufWriter, Write};
 
 fn main() {
+    let out = std::io::stdout();
+    let mut out = BufWriter::new(out.lock());
+    macro_rules! puts {
+        ($($format:tt)*) => (write!(out,$($format)*).unwrap());
+    }
+
     input!{
       n: usize,
       k: usize,
       aa: [usize; n],
     }
-    let mut dp = vec![vec![None; 2]; 42];
-    dp[41][0] = Some(0);
 
-    for d in (0..41).rev() {
-        let bit = 1 << d;
-        let mut n1 = 0;
-        for i in 0..n {
-            if aa[i] & bit > 0 {
-                n1 += 1;
+    const MAX_DIGIT: usize = 50;
+    let mut dp = vec![vec![None; 2]; MAX_DIGIT+1];
+    dp[0][0] = Some(0);
+
+    for d in 0..MAX_DIGIT {
+        let bit: usize = 1 << (MAX_DIGIT - d - 1);
+
+        let mut ones = 0;
+        for &a in aa.iter() {
+            if a&bit > 0 {
+                ones += 1;
             }
         }
-        let n0 = n - n1;
+        let zeros = n-ones;
 
         if k & bit > 0 {
-            dp[d][0] = dp[d+1][0].map(|v| v + n0 * bit); // 1->1
-            dp[d][1] = dp[d+1][0].map(|v| v + n1 * bit); // 1->0
+            dp[d+1][0] = dp[d][0].map(|v| v + zeros*bit); // 1->1
+            dp[d+1][1] = dp[d][0].map(|v| v + ones*bit); // 1->0
         } else {
-            dp[d][0] = dp[d+1][0].map(|v| v + n1 * bit);
+            dp[d+1][0] = dp[d][0].map(|v| v + ones*bit); // 0->0
         }
-        dp[d][1] = max(dp[d][1], dp[d+1][1].map(|v| v + bit * max(n0, n1)));
+
+        dp[d+1][1] = max(dp[d+1][1], dp[d][1].map(|v| v + max(ones * bit, zeros*bit)));
     }
-    let ans = max(dp[0][0], dp[0][1]);
-    println!("{}", ans.unwrap());
+    puts!("{}\n", dp[MAX_DIGIT].iter().max().unwrap().unwrap());
 }
