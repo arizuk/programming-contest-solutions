@@ -72,22 +72,14 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
-#[derive(Debug)]
-pub struct Graph {
-    n: usize,
-    edges: Vec<Vec<usize>>
-}
-#[derive(Debug)]
-pub struct DFSState {
-    ans: Vec<usize>,
-}
-impl Graph {
-    pub fn dfs(&self, cur: usize, from: usize, state: &mut DFSState) {
-        for &to in self.edges[cur].iter() {
-            if to != from {
-                state.ans[to] += state.ans[cur];
-                self.dfs(to, cur, state);
-            }
+fn dfs(edges: &Vec<Vec<usize>>, cur: usize, par: usize, pxs: &Vec<usize>, ans: &mut Vec<usize>) {
+    ans[cur] = pxs[cur];
+    if par != edges.len() {
+        ans[cur] += ans[par];
+    }
+    for &nd in edges[cur].iter() {
+        if nd != par {
+            dfs(edges, nd, cur, pxs, ans);
         }
     }
 }
@@ -103,7 +95,7 @@ fn main() {
       n: usize,
       q: usize,
       abs: [(usize1, usize1); n-1],
-      pxs: [(usize1,usize); q],
+      pxs: [(usize1, usize); q],
     }
 
     let mut edges = vec![vec![]; n];
@@ -112,23 +104,14 @@ fn main() {
         edges[b].push(a);
     }
 
-    let mut ps = vec![0; n];
+    let mut psums = vec![0; n];
     for (p, x) in pxs {
-        ps[p] += x;
+        psums[p] += x;
     }
-    let ans = ps;
 
-    let g = Graph {
-            n: n,
-            edges: edges
-        };
+    let mut ans = vec![0; n];
+    dfs(&edges, 0, n, &psums, &mut ans);
 
-    let mut state = DFSState {
-            ans: ans
-        };
-    g.dfs(0, n, &mut state);
-
-    let ans = state.ans;
     for i in 0..ans.len() {
         if i == ans.len() - 1 {
             puts!("{}", ans[i]);
