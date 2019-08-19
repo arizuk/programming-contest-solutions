@@ -29,11 +29,6 @@ macro_rules! input_inner {
         let $var = read_value!($next, $t);
         input_inner!{$next $($r)*}
     };
-
-    ($next:expr, mut $var:ident : $t:tt $($r:tt)*) => {
-        let mut $var = read_value!($next, $t);
-        input_inner!{$next $($r)*}
-    };
 }
 
 #[allow(unused_macros)]
@@ -70,48 +65,47 @@ macro_rules! debug {
 #[allow(unused_imports)]
 use std::cmp::{min, max};
 #[allow(unused_imports)]
-use std::io::{stdout, stdin, BufWriter, Write};
+use std::io::Write;
+use std::collections::HashMap;
+
 
 fn main() {
-    let out = std::io::stdout();
-    let mut out = BufWriter::new(out.lock());
-    macro_rules! puts {
-        ($($format:tt)*) => (write!(out,$($format)*).unwrap());
-    }
-
     input!{
       n: usize,
-      mut aa: [usize; n],
+      aa: [usize; n],
     }
+    let mut aa = aa;
     aa.sort();
 
-    use std::collections::HashMap;
-    let mut map = HashMap::new();
-    for &a in aa.iter() {
-        *map.entry(a).or_insert(0) += 1;
+    let mut map: HashMap<usize, usize> = HashMap::new();
+
+    let mut ans = 0;
+
+    for i in 0..n {
+        let a = aa[i];
+        let e = map.entry(a).or_insert(0);
+        *e += 1;
     }
 
-    aa.reverse();
-    let mut ans = 0;
-    for a in aa {
-        let next = a.next_power_of_two();
-        let mut rem = next - a;
-        if rem == 0 {
-            if map[&a] < 2 {
+    for r in (0..n).rev() {
+        let a = aa[r];
+        if let Some(v) = map.get_mut(&a) {
+            if *v == 0 {
                 continue;
             }
-            rem = a;
-        }
-        if !map.contains_key(&rem) {
-            continue;
-        }
-        if map[&rem] == 0 || map[&a] == 0 {
-            continue;
+            *v -= 1;
         }
 
-        ans += 1;
-        *map.get_mut(&a).unwrap() -= 1;
-        *map.get_mut(&rem).unwrap() -= 1;
+        let mut t = 2;
+        while t <= a { t *= 2; }
+        // debug!(a, t);
+
+        if let Some(v) = map.get_mut(&(t-a)) {
+            if *v > 0 {
+                *v -= 1;
+                ans += 1;
+            }
+        }
     }
-    puts!("{}\n", ans);
+    println!("{}", ans);
 }
