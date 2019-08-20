@@ -69,39 +69,37 @@ macro_rules! debug {
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
-#[allow(unused_imports)]
-use std::io::{stdout, stdin, BufWriter, Write};
 
-fn dfs(e: &Vec<Vec<usize>>, cur: usize) -> usize {
-    if e[cur].len() == 0 {
+#[allow(unused_imports)]
+use std::io::Write;
+
+fn dfs(mems: &Vec<Vec<usize>>, cur: usize) -> usize {
+    if mems[cur].len() == 0 {
         return 1;
     }
 
-    let ret: Vec<_> = e[cur].iter().map(|&v| dfs(e, v)).collect();
-    let v1 = *ret.iter().max().unwrap();
-    let v2 = *ret.iter().min().unwrap();
-    v1 + v2 + 1
+    debug!(cur);
+
+    let mut vals = vec![];
+    for &mem in mems[cur].iter() {
+        vals.push(
+            dfs(mems, mem)
+        );
+    }
+    let mx = vals.iter().max().unwrap();
+    let mn = vals.iter().min().unwrap();
+    mx + mn + 1
 }
 
 fn main() {
-    let out = std::io::stdout();
-    let mut out = BufWriter::new(out.lock());
-    macro_rules! puts {
-        ($($format:tt)*) => (write!(out,$($format)*).unwrap());
-    }
-
     input!{
       n: usize,
-      bs: [usize1; n-1]
+      bs: [usize1; n-1],
     }
 
-    let mut e = vec![vec![]; n];
+    let mut mems = vec![vec![]; n];
     for i in 0..n-1 {
-        let b = bs[i];
-        let i = i + 1;
-        e[b].push(i);
+        mems[bs[i]].push(i+1);
     }
-
-    let ans = dfs(&e, 0);
-    puts!("{}\n", ans);
+    println!("{}", dfs(&mems, 0));
 }
