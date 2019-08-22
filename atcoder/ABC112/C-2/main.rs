@@ -72,21 +72,6 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
-pub fn uppper_bound<T: Ord>(a: &Vec<T>, x: &T) -> usize {
-    use std::cmp::Ordering;
-    let mut l = 0;
-    let mut r = a.len();
-    while l != r {
-        let m = l + (r - l) / 2;
-        match a[m].cmp(x) {
-            Ordering::Less | Ordering::Equal => l = m + 1,
-            Ordering::Greater => r = m,
-        }
-    }
-    l
-}
-
-
 fn main() {
     let out = std::io::stdout();
     let mut out = BufWriter::new(out.lock());
@@ -96,45 +81,33 @@ fn main() {
 
     input!{
       n: usize,
-      m: usize,
-      mut aa: [usize;n],
-      mut bb: [usize;m],
-    }
-    aa.sort();
-    bb.sort();
-
-
-    use std::collections::HashSet;
-    let sa: HashSet<_> = aa.iter().map(|&v|v).collect();
-    let sb: HashSet<_> = bb.iter().map(|&v|v).collect();
-    if sa.len() != n || sb.len() != m {
-        return puts!("{}\n", 0);
+      xyhs: [(i64,i64,i64); n],
     }
 
-    const MOD: usize = 1e9 as usize + 7;
-    let mut ans = 1;
-    for i in (1..n*m+1).rev() {
-        if sa.contains(&i) && sb.contains(&i) {
-            continue;
-        }
-        if sa.contains(&i) {
-            let pos = m - uppper_bound(&bb, &i);
-            ans *= pos;
-            ans %= MOD;
-        } else if sb.contains(&i) {
-            let pos = n - uppper_bound(&aa, &i);
-            ans *= pos;
-            ans %= MOD;
-        } else {
-            let pos1 = n - uppper_bound(&aa, &i);
-            let pos2 = m - uppper_bound(&bb, &i);
+    for cx in 0..101 {
+        for cy in 0..101 {
+            let mut hh = -1;
+            for &(x, y, h) in xyhs.iter() {
+                if h == 0 {
+                    continue;
+                }
+                hh = h + (x-cx).abs() + (y-cy).abs();
+                break;
+            }
+            assert!(hh >= 0);
 
-            // debug!(aa, bb);
-            // debug!(i, pos1, pos2);
 
-            ans *= (pos1 * pos2) - (n*m - i);
-            ans %= MOD;
+            let mut ok = true;
+            for &(x, y, h) in xyhs.iter() {
+                let h2 = max(hh-(x-cx).abs()-(y-cy).abs(), 0);
+                if h != h2 {
+                    ok = false;
+                    break;
+                }
+            }
+            if ok {
+                return puts!("{} {} {}\n", cx, cy, hh);
+            }
         }
     }
-    puts!("{}\n", ans);
 }

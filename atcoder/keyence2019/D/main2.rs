@@ -29,11 +29,6 @@ macro_rules! input_inner {
         let $var = read_value!($next, $t);
         input_inner!{$next $($r)*}
     };
-
-    ($next:expr, mut $var:ident : $t:tt $($r:tt)*) => {
-        let mut $var = read_value!($next, $t);
-        input_inner!{$next $($r)*}
-    };
 }
 
 #[allow(unused_macros)]
@@ -69,72 +64,57 @@ macro_rules! debug {
 
 #[allow(unused_imports)]
 use std::cmp::{min, max};
+
 #[allow(unused_imports)]
-use std::io::{stdout, stdin, BufWriter, Write};
+use std::io::Write;
+use std::collections::HashSet;
 
-pub fn uppper_bound<T: Ord>(a: &Vec<T>, x: &T) -> usize {
-    use std::cmp::Ordering;
-    let mut l = 0;
-    let mut r = a.len();
-    while l != r {
-        let m = l + (r - l) / 2;
-        match a[m].cmp(x) {
-            Ordering::Less | Ordering::Equal => l = m + 1,
-            Ordering::Greater => r = m,
-        }
-    }
-    l
-}
-
+const MOD: usize = 1e9 as usize + 7;
 
 fn main() {
-    let out = std::io::stdout();
-    let mut out = BufWriter::new(out.lock());
-    macro_rules! puts {
-        ($($format:tt)*) => (write!(out,$($format)*).unwrap());
-    }
-
     input!{
       n: usize,
       m: usize,
-      mut aa: [usize;n],
-      mut bb: [usize;m],
-    }
-    aa.sort();
-    bb.sort();
-
-
-    use std::collections::HashSet;
-    let sa: HashSet<_> = aa.iter().map(|&v|v).collect();
-    let sb: HashSet<_> = bb.iter().map(|&v|v).collect();
-    if sa.len() != n || sb.len() != m {
-        return puts!("{}\n", 0);
+      aa: [usize; n],
+      bb: [usize; m],
     }
 
-    const MOD: usize = 1e9 as usize + 7;
+    let au: HashSet<usize> = aa.iter().map(|&v| v).collect();
+    if au.len() < n {
+        return println!("{}", 0);
+    }
+    let bu: HashSet<usize> = bb.iter().map(|&v| v).collect();
+    if bu.len() < m {
+        return println!("{}", 0);
+    }
+
+
     let mut ans = 1;
-    for i in (1..n*m+1).rev() {
-        if sa.contains(&i) && sb.contains(&i) {
-            continue;
+    let mut rbigger = 0;
+    let mut cbigger = 0;
+    for i in (1..(n*m)+1).rev() {
+        let rmax = au.contains(&i);
+        let cmax = bu.contains(&i);
+
+        if rmax {
+            rbigger += 1;
         }
-        if sa.contains(&i) {
-            let pos = m - uppper_bound(&bb, &i);
-            ans *= pos;
+        if cmax {
+            cbigger += 1;
+        }
+
+        if rmax && cmax {
+        } else if rmax {
+            ans *= cbigger;
             ans %= MOD;
-        } else if sb.contains(&i) {
-            let pos = n - uppper_bound(&aa, &i);
-            ans *= pos;
+        } else if cmax {
+            ans *= rbigger;
             ans %= MOD;
         } else {
-            let pos1 = n - uppper_bound(&aa, &i);
-            let pos2 = m - uppper_bound(&bb, &i);
-
-            // debug!(aa, bb);
-            // debug!(i, pos1, pos2);
-
-            ans *= (pos1 * pos2) - (n*m - i);
+            ans *= rbigger*cbigger - (n*m-i);
             ans %= MOD;
         }
     }
-    puts!("{}\n", ans);
+    println!("{}", ans);
 }
+

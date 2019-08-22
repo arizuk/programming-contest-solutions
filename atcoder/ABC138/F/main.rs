@@ -74,109 +74,18 @@ use std::io::{stdout, stdin, BufWriter, Write};
 
 const MOD: usize = 1e9 as usize + 7;
 
-#[doc = " b^power"]
-pub fn mod_pow(mut b: usize, mut power: usize) -> usize {
-    let mut result = 1;
-    while power > 0 {
-        if power & 1 == 1 {
-            result = (result * b) % MOD;
-        }
-        b = (b * b) % MOD;
-        power >>= 1;
-    }
-    result
-}
-pub fn inv(a: usize) -> usize {
-    mod_pow(a, MOD - 2)
-}
+fn rec(l: &[usize], r: &[usize], pos: usize, flag_l: bool, flag_r: bool, msb: bool) -> usize {
+    let dl = l[pos];
+    let dr = r[pos];
 
-
-#[allow(dead_code)]
-pub struct ModFactorial {
-    fact: Vec<usize>,
-    inv: Vec<usize>,
-    finv: Vec<usize>,
-    modulo: usize,
-}
-impl ModFactorial {
-    pub fn new(max_value: usize, modulo: usize) -> Self {
-        let mut fact = vec![0; max_value + 1];
-        let mut inv = vec![0; max_value + 1];
-        let mut finv = vec![0; max_value + 1];
-        fact[0] = 1;
-        fact[1] = 1;
-        finv[0] = 1;
-        finv[1] = 1;
-        inv[1] = 1;
-        for i in 2..max_value + 1 {
-            fact[i] = fact[i - 1] * i % modulo;
-            inv[i] = modulo - inv[modulo % i] * (modulo / i) % modulo;
-            finv[i] = finv[i - 1] * inv[i] % modulo;
-        }
-        ModFactorial {
-            fact: fact,
-            inv: inv,
-            finv: finv,
-            modulo: modulo,
-        }
-    }
-    pub fn combination(&self, n: usize, k: usize) -> usize {
-        assert!(n >= k);
-        self.fact[n] * self.finv[n - k] % self.modulo * self.finv[k] % self.modulo
-    }
-}
-
-fn count_zeros(n: usize, d: usize) -> Vec<usize> {
-    let mut dp = vec![vec![0; d+1]; d+1];
-    dp[d][0] = 0;
-
-    let mut zeros = 0;
-    for i in (0..d).rev() {
-        let bit = 1 << i;
-
-        if bit & n > 0 {
-            // このタイミングで0にする場合は、低いことが確定する
-            dp[i][zeros+1] += 1;
-        } else {
-            zeros += 1;
-        }
-
-
-        // 確定済み
-        for nd in 0..d+1 {
-            // 1の場合
-            dp[i][nd] += dp[i+1][nd];
-
-            // 0の場合
-            if nd < d {
-                dp[i][nd+1] += dp[i+1][nd];
-            }
-        }
-    }
-    dp[0][zeros] += 1;
-    dp[0].clone()
-}
-
-fn solve(n: usize) -> usize {
-    let fact = ModFactorial::new(50, MOD);
-    let mut d = 1;
     let mut ans = 0;
-    while 2usize.pow(d) <= n {
-        let temp = 2usize.pow(d);
-        if n >= temp*2 {
-            for i in 0..d+1 {
-                ans += fact.combination(d as _, i as _) * 2usize.pow(i);
-            }
-        } else {
-            // 0の個数を数える
-            let zeros = count_zeros(n, d as _);
-            for i in 0..d+1 {
-                ans += zeros[i as usize] * 2usize.pow(i);
-            }
-        }
-        d += 1;
+    if msb {
+        // (0, 0)
+        // (0, 1)
+        // (1, 0)
+        rec(l, r, pos+1, )
+    } else {
     }
-    ans
 }
 
 
@@ -188,15 +97,10 @@ fn main() {
     }
 
     input!{
-      l: usize,
-      r: usize,
+      l: u64,
+      r: u64,
     }
-    // for i in 2..16 {
-    //     debug!(i, solve(i));
-    // }
-
-    let v1 = solve(l-1);
-    let v2 = solve(r);
-    debug!(v2, v1);
-    puts!("{}\n", v2-v1);
+    let l: Vec<_> = format!("{:060b}", l).chars().map(|c| c.to_digit(10).unwrap() as usize).collect();
+    let r: Vec<_> = format!("{:060b}", r).chars().map(|c| c.to_digit(10).unwrap() as usize).collect();
+    rec(&l, &r, 0);
 }

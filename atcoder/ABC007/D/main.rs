@@ -72,20 +72,59 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
-pub fn uppper_bound<T: Ord>(a: &Vec<T>, x: &T) -> usize {
-    use std::cmp::Ordering;
-    let mut l = 0;
-    let mut r = a.len();
-    while l != r {
-        let m = l + (r - l) / 2;
-        match a[m].cmp(x) {
-            Ordering::Less | Ordering::Equal => l = m + 1,
-            Ordering::Greater => r = m,
+const MAX_D: usize = 20;
+
+fn calc(a: &Vec<usize>, pos: usize, under: bool, ng: bool) -> usize {
+    if pos == a.len() {
+        return if ng {
+            1
+        } else {
+            0
         }
     }
-    l
+
+    let mut ans = 0;
+    match (under, ng) {
+        (true, true) => {
+            ans += calc(a, pos+1, under, ng) * 10;
+        },
+        (true, false) => {
+            ans += calc(a, pos+1, under, true) * 2;
+            ans += calc(a, pos+1, under, ng) * 8;
+        },
+        (false, true) => {
+            let digit = a[pos];
+            ans += calc(a, pos+1, true, true) * digit;
+            ans += calc(a, pos+1, false, true);
+        },
+        (false, false) => {
+            let digit = a[pos];
+            let mut ng_nums = 0;
+            for i in 0..digit {
+                if i == 4 || i == 9 {
+                    ng_nums += 1;
+                }
+            }
+            ans += calc(a, pos+1, true, true) * ng_nums;
+            ans += calc(a, pos+1, true, false) * (digit - ng_nums);
+            ans += calc(a, pos+1, false, digit==4 || digit==9);
+        },
+    }
+    ans
 }
 
+
+fn to_vec(n: usize) -> Vec<usize> {
+    let mut s: Vec<_> = n.to_string().chars().collect();
+    s.reverse();
+    let mut a = vec![0; MAX_D];
+    let mut cur = a.len()-1;
+    for c in s {
+        a[cur] = c.to_digit(10).unwrap() as usize;
+        cur -= 1;
+    }
+    a
+}
 
 fn main() {
     let out = std::io::stdout();
@@ -95,46 +134,11 @@ fn main() {
     }
 
     input!{
-      n: usize,
-      m: usize,
-      mut aa: [usize;n],
-      mut bb: [usize;m],
+      a: usize,
+      b: usize,
     }
-    aa.sort();
-    bb.sort();
-
-
-    use std::collections::HashSet;
-    let sa: HashSet<_> = aa.iter().map(|&v|v).collect();
-    let sb: HashSet<_> = bb.iter().map(|&v|v).collect();
-    if sa.len() != n || sb.len() != m {
-        return puts!("{}\n", 0);
-    }
-
-    const MOD: usize = 1e9 as usize + 7;
-    let mut ans = 1;
-    for i in (1..n*m+1).rev() {
-        if sa.contains(&i) && sb.contains(&i) {
-            continue;
-        }
-        if sa.contains(&i) {
-            let pos = m - uppper_bound(&bb, &i);
-            ans *= pos;
-            ans %= MOD;
-        } else if sb.contains(&i) {
-            let pos = n - uppper_bound(&aa, &i);
-            ans *= pos;
-            ans %= MOD;
-        } else {
-            let pos1 = n - uppper_bound(&aa, &i);
-            let pos2 = m - uppper_bound(&bb, &i);
-
-            // debug!(aa, bb);
-            // debug!(i, pos1, pos2);
-
-            ans *= (pos1 * pos2) - (n*m - i);
-            ans %= MOD;
-        }
-    }
-    puts!("{}\n", ans);
+    let v1 = calc(&to_vec(b), 0, false, false);
+    let v2 = calc(&to_vec(a-1), 0, false, false);
+    debug!(v1, v2);
+    puts!("{}\n", v1-v2);
 }

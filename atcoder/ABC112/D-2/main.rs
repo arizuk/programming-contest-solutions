@@ -72,20 +72,30 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
-pub fn uppper_bound<T: Ord>(a: &Vec<T>, x: &T) -> usize {
-    use std::cmp::Ordering;
-    let mut l = 0;
-    let mut r = a.len();
-    while l != r {
-        let m = l + (r - l) / 2;
-        match a[m].cmp(x) {
-            Ordering::Less | Ordering::Equal => l = m + 1,
-            Ordering::Greater => r = m,
-        }
-    }
-    l
-}
+fn solve(n: usize, k: usize) -> usize {
+    let mut m = 1;
 
+    let mut ans = 0;
+    while m * m <= n {
+        if n % m == 0 {
+            // m
+            let a = m;
+            let b = n/m;
+
+            if a >= k {
+                ans = max(ans, b);
+            }
+            if b >= k {
+                ans = max(ans, a);
+            }
+
+
+            // n/m
+        }
+        m += 1;
+    }
+    ans
+}
 
 fn main() {
     let out = std::io::stdout();
@@ -97,44 +107,9 @@ fn main() {
     input!{
       n: usize,
       m: usize,
-      mut aa: [usize;n],
-      mut bb: [usize;m],
-    }
-    aa.sort();
-    bb.sort();
-
-
-    use std::collections::HashSet;
-    let sa: HashSet<_> = aa.iter().map(|&v|v).collect();
-    let sb: HashSet<_> = bb.iter().map(|&v|v).collect();
-    if sa.len() != n || sb.len() != m {
-        return puts!("{}\n", 0);
     }
 
-    const MOD: usize = 1e9 as usize + 7;
-    let mut ans = 1;
-    for i in (1..n*m+1).rev() {
-        if sa.contains(&i) && sb.contains(&i) {
-            continue;
-        }
-        if sa.contains(&i) {
-            let pos = m - uppper_bound(&bb, &i);
-            ans *= pos;
-            ans %= MOD;
-        } else if sb.contains(&i) {
-            let pos = n - uppper_bound(&aa, &i);
-            ans *= pos;
-            ans %= MOD;
-        } else {
-            let pos1 = n - uppper_bound(&aa, &i);
-            let pos2 = m - uppper_bound(&bb, &i);
-
-            // debug!(aa, bb);
-            // debug!(i, pos1, pos2);
-
-            ans *= (pos1 * pos2) - (n*m - i);
-            ans %= MOD;
-        }
-    }
+    let ans = solve(m, n);
     puts!("{}\n", ans);
+
 }

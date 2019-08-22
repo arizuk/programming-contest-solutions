@@ -72,21 +72,6 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
-pub fn uppper_bound<T: Ord>(a: &Vec<T>, x: &T) -> usize {
-    use std::cmp::Ordering;
-    let mut l = 0;
-    let mut r = a.len();
-    while l != r {
-        let m = l + (r - l) / 2;
-        match a[m].cmp(x) {
-            Ordering::Less | Ordering::Equal => l = m + 1,
-            Ordering::Greater => r = m,
-        }
-    }
-    l
-}
-
-
 fn main() {
     let out = std::io::stdout();
     let mut out = BufWriter::new(out.lock());
@@ -96,45 +81,57 @@ fn main() {
 
     input!{
       n: usize,
+      e: [chars; n],
       m: usize,
-      mut aa: [usize;n],
-      mut bb: [usize;m],
-    }
-    aa.sort();
-    bb.sort();
-
-
-    use std::collections::HashSet;
-    let sa: HashSet<_> = aa.iter().map(|&v|v).collect();
-    let sb: HashSet<_> = bb.iter().map(|&v|v).collect();
-    if sa.len() != n || sb.len() != m {
-        return puts!("{}\n", 0);
+      ps: [usize1; m],
     }
 
-    const MOD: usize = 1e9 as usize + 7;
-    let mut ans = 1;
-    for i in (1..n*m+1).rev() {
-        if sa.contains(&i) && sb.contains(&i) {
-            continue;
+    const INF: u64 = 1 << 50;
+    let mut cs = vec![vec![INF; n]; n];
+    for from in 0..n {
+        for to in 0..e[from].len() {
+            if e[from][to] == '1' {
+                cs[from][to] = 1;
+            }
         }
-        if sa.contains(&i) {
-            let pos = m - uppper_bound(&bb, &i);
-            ans *= pos;
-            ans %= MOD;
-        } else if sb.contains(&i) {
-            let pos = n - uppper_bound(&aa, &i);
-            ans *= pos;
-            ans %= MOD;
+    }
+
+    for i in 0..n {
+        // debug!(cs[i]);
+        cs[i][i] = 0;
+    }
+
+    for k in 0..n {
+        for i in 0..n {
+            for j in 0..n {
+                cs[i][j] = min(cs[i][j], cs[i][k] + cs[k][j]);
+            }
+        }
+    }
+
+    let v1 = ps[0];
+    let mut dist = 1;
+    let mut ans = vec![];
+    ans.push(v1);
+
+    for i in 1..m {
+        let cur = ps[i];
+        let prev = ans[ans.len()-1];
+        if cs[prev][cur] != dist {
+            ans.push(ps[i-1]);
+            dist = 1;
+        }
+        dist += 1;
+    }
+    ans.push(ps[m-1]);
+
+    puts!("{}\n", ans.len());
+    for i in 0..ans.len() {
+        if i == ans.len() - 1 {
+            puts!("{}", ans[i]+1);
         } else {
-            let pos1 = n - uppper_bound(&aa, &i);
-            let pos2 = m - uppper_bound(&bb, &i);
-
-            // debug!(aa, bb);
-            // debug!(i, pos1, pos2);
-
-            ans *= (pos1 * pos2) - (n*m - i);
-            ans %= MOD;
+            puts!("{} ", ans[i]+1);
         }
     }
-    puts!("{}\n", ans);
+    puts!("\n")
 }
