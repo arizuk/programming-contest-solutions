@@ -1,6 +1,7 @@
 input*
 output*
 main
+main.bash
 out
 a.out
 debug
