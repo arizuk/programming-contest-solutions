@@ -73,23 +73,27 @@ use std::cmp::{min, max};
 use std::io::{stdout, stdin, BufWriter, Write};
 
 pub mod ds {
+    use super::*;
+    use std::cmp::PartialOrd;
     use std::ops::{AddAssign, Sub};
     #[derive(Debug)]
     pub struct BIT<T> {
+        size: usize,
         data: Vec<T>,
     }
     impl<T> BIT<T>
     where
-        T: Copy + AddAssign + Sub<Output = T> + Default,
+        T: Copy + AddAssign + Sub<Output = T> + Default + PartialOrd + std::fmt::Debug,
     {
         pub fn new(size: usize) -> Self {
             let buf_size = size.next_power_of_two();
             BIT {
+                size: size,
                 data: vec![T::default(); buf_size + 1],
             }
         }
         #[doc = " [l, r) l,r: 1-indexed"]
-        pub fn range_sum(&self, l: usize, r: usize) -> T {
+        pub fn sum_between(&self, l: usize, r: usize) -> T {
             self.sum(r - 1) - self.sum(l - 1)
         }
         #[doc = " i: 1-indexed but returns 0 if i=0 is given."]
@@ -112,43 +116,22 @@ pub mod ds {
                 i += i & -i;
             }
         }
+        pub fn lower_bound(&self, value: T) -> usize {
+            let mut r = self.size + 1;
+            let mut l = 1;
+            while r != l {
+                let mid = (r + l) / 2;
+                if self.sum(mid) >= value {
+                    r = mid;
+                } else {
+                    l = mid + 1;
+                }
+            }
+            r
+        }
     }
 }
-
 use ds::BIT;
-
-fn find_right(bit: &BIT<usize>, n:usize, cur:usize, num: usize) -> usize {
-    let mut ok = n+1;
-    let mut ng = cur;
-    while ok != ng {
-        let mid = (ok + ng) / 2;
-        if bit.range_sum(cur, mid+1) >= num {
-            ok = mid;
-        } else {
-            ng = mid + 1;
-        }
-    }
-    ok
-}
-
-fn find_left(bit: &BIT<usize>, n:usize, cur:usize, num: usize) -> usize {
-    let cur_num = bit.range_sum(1, cur+1);
-    if num >= cur_num {
-        return 0;
-    }
-
-    let mut ok = cur;
-    let mut ng = 1;
-    while ok != ng {
-        let mid = (ok + ng) / 2;
-        if bit.range_sum(1, mid+1) >= (cur_num-num) {
-            ok = mid;
-        } else {
-            ng = mid + 1;
-        }
-    }
-    ok
-}
 
 fn main() {
     let out = std::io::stdout();
@@ -169,27 +152,26 @@ fn main() {
     }
 
     let mut bit = BIT::new(n);
-    bit.add(pos[n]+1, 1);
-
     let mut ans = 0 as usize;
-    for i in (1..n).rev() {
+    for i in (1..n+1).rev() {
         let bit_pos = pos[i] + 1;
-        let mut l1 = find_left(&bit, n, bit_pos, 1);
-        let l2 = find_left(&bit, n, bit_pos, 0);
-        let r1 = find_right(&bit, n, bit_pos, 1);
-
-        if l1 == 1 && l2 == 1 {
-            l1 = 0;
-        }
-        let r2 = find_right(&bit, n, bit_pos, 2);
-
-        let v1 = (l2-l1) * (r1 - bit_pos) * i;
-        let v2 = (r2-r1) * (bit_pos-l2) * i;
-
-        ans += v1 + v2;
-        debug!(i, l1, l2, bit_pos, r1, r2, v1, v2, ans);
-
         bit.add(bit_pos, 1);
+        let cur = bit.sum(bit_pos) as i64;
+
+        let get_index = |v| {
+            if v <= 0 {
+                0
+            } else {
+                bit.lower_bound(v as usize)
+            }
+        };
+        let l1 = get_index(cur-2);
+        let l2 = get_index(cur-1);
+        let r1 = get_index(cur+1);
+        let r2 = get_index(cur+2);
+
+        ans += (l2-l1) * (r1-bit_pos) * i;
+        ans += (r2-r1) * (bit_pos - l2) * i;
     }
     puts!("{}\n", ans);
 }
