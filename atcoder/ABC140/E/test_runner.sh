@@ -1,4 +1,5 @@
-rustc -o main main.rs -C opt-level=3
+set -e
+rustc -o main ${1} -C opt-level=3
 for i in `seq 1 100`; do
     ruby case.rb
     res=$(cat input_test|./main)
