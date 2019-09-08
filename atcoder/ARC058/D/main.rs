@@ -72,6 +72,55 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
+const MOD: usize = 1e9 as usize + 7;
+
+fn path(h: usize, w: usize, fact: &ModFactorial) -> usize {
+    if h==0 || w == 0 {
+        return 1;
+    }
+    let mut ret = fact.fact[h+w-2];
+    ret *= fact.finv[h-1];
+    ret %= MOD;
+    ret *= fact.finv[w-1];
+    ret %= MOD;
+    ret
+}
+
+#[allow(dead_code)]
+pub struct ModFactorial {
+    fact: Vec<usize>,
+    inv: Vec<usize>,
+    finv: Vec<usize>,
+    modulo: usize,
+}
+impl ModFactorial {
+    pub fn new(max_value: usize, modulo: usize) -> Self {
+        let mut fact = vec![0; max_value + 1];
+        let mut inv = vec![0; max_value + 1];
+        let mut finv = vec![0; max_value + 1];
+        fact[0] = 1;
+        fact[1] = 1;
+        finv[0] = 1;
+        finv[1] = 1;
+        inv[1] = 1;
+        for i in 2..max_value + 1 {
+            fact[i] = fact[i - 1] * i % modulo;
+            inv[i] = modulo - inv[modulo % i] * (modulo / i) % modulo;
+            finv[i] = finv[i - 1] * inv[i] % modulo;
+        }
+        ModFactorial {
+            fact: fact,
+            inv: inv,
+            finv: finv,
+            modulo: modulo,
+        }
+    }
+    pub fn combination(&self, n: usize, k: usize) -> usize {
+        assert!(n >= k);
+        self.fact[n] * self.finv[n - k] % self.modulo * self.finv[k] % self.modulo
+    }
+}
+
 fn main() {
     let out = std::io::stdout();
     let mut out = BufWriter::new(out.lock());
@@ -80,67 +129,25 @@ fn main() {
     }
 
     input!{
-      n: usize,
-      a: usize1,
-      k_s: chars,
-      bs: [usize1; n],
+      h: usize,
+      w: usize,
+      a: usize,
+      b: usize,
     }
 
-    use std::collections::HashSet;
-    let mut seen = HashSet::new();
-    let mut path = vec![];
-    let mut cur = a;
-    let mut ok = false;
-    for i in 0..n {
-        seen.insert(cur);
-        path.push(cur);
+    let fact = ModFactorial::new(h+w, MOD);
+    let mut ans = 0;
+    for i in 1..w-b+1 {
+        let mut num_ways = 1;
+        let hh = h-a;
+        let ww = b + i;
 
-        let nx = bs[cur];
-        if seen.contains(&nx) {
-            path.push(nx);
-            ok = true;
-            break;
-        }
-        cur = nx;
+        num_ways *= path(hh, ww, &fact);
+        num_ways *= path(a, w-ww+1, &fact);
+        num_ways %= MOD;
+        // debug!(i, hh, ww, a, w-ww+1, num_ways);
+        ans += num_ways;
+        ans %= MOD;
     }
-    assert!(ok);
-
-    let mut s = 0;
-    let mut last = path[path.len()-1];
-    ok = false;
-    for i in 0..path.len()-1 {
-        if path[i] == last {
-            s = i;
-            ok = true;
-            break;
-        }
-    }
-    assert!(ok);
-
-    let cycle = (&path[s..path.len()-1]).clone();
-    let m = cycle.len();
-
-    debug!(path, cycle, s);
-
-    if k_s.len() <= 6 {
-        let mut k = 0;
-        for c in k_s {
-            k *= 10;
-            k += c.to_digit(10).unwrap() as usize;
-        }
-        if k <= s {
-            return puts!("{}\n", path[k]+1);
-        }
-        let idx = ((k%m) + m - s) % m;
-        return puts!("{}\n", cycle[idx]+1);
-    }
-
-    let mut k = 0;
-    for c in k_s {
-        k *= 10;
-        k += c.to_digit(10).unwrap() as usize;
-        k %= m;
-    }
-    let idx = ((k%m) + m - s) % m;
-    return puts!("{}\n", cycle[idx]+1);
+    puts!("{}\n", ans);
 }

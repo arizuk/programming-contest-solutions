@@ -80,67 +80,14 @@ fn main() {
     }
 
     input!{
-      n: usize,
-      a: usize1,
-      k_s: chars,
-      bs: [usize1; n],
+      k: usize,
+      t: usize,
+      mut aa: [usize; t],
     }
+    aa.sort();
+    let max_a = *aa.iter().max().unwrap() as i64;
+    let sum = aa.iter().sum::<usize>() as i64 - max_a;
 
-    use std::collections::HashSet;
-    let mut seen = HashSet::new();
-    let mut path = vec![];
-    let mut cur = a;
-    let mut ok = false;
-    for i in 0..n {
-        seen.insert(cur);
-        path.push(cur);
-
-        let nx = bs[cur];
-        if seen.contains(&nx) {
-            path.push(nx);
-            ok = true;
-            break;
-        }
-        cur = nx;
-    }
-    assert!(ok);
-
-    let mut s = 0;
-    let mut last = path[path.len()-1];
-    ok = false;
-    for i in 0..path.len()-1 {
-        if path[i] == last {
-            s = i;
-            ok = true;
-            break;
-        }
-    }
-    assert!(ok);
-
-    let cycle = (&path[s..path.len()-1]).clone();
-    let m = cycle.len();
-
-    debug!(path, cycle, s);
-
-    if k_s.len() <= 6 {
-        let mut k = 0;
-        for c in k_s {
-            k *= 10;
-            k += c.to_digit(10).unwrap() as usize;
-        }
-        if k <= s {
-            return puts!("{}\n", path[k]+1);
-        }
-        let idx = ((k%m) + m - s) % m;
-        return puts!("{}\n", cycle[idx]+1);
-    }
-
-    let mut k = 0;
-    for c in k_s {
-        k *= 10;
-        k += c.to_digit(10).unwrap() as usize;
-        k %= m;
-    }
-    let idx = ((k%m) + m - s) % m;
-    return puts!("{}\n", cycle[idx]+1);
+    let ans = max(0, max_a-1-sum);
+    puts!("{}\n", ans);
 }
