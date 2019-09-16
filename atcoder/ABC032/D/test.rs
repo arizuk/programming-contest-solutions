@@ -229,22 +229,11 @@ fn main() {
       w: usize,
       vws: [(usize, usize); n],
     }
-    if n == 1 {
-        if vws[0].1 <= w {
-            puts!("{}\n", vws[0].0);
-        } else {
-            puts!("{}\n", 0);
-        }
-        return;
-    }
-    let max_w = vws.iter().map(|v|v.1).max().unwrap();
-
-    let ans = if n<=30 {
-        dp1(n, w, vws)
-    } else if max_w <= 1000 {
-        dp2(n, w, vws)
+    let v1 = dp1(n, w, vws.clone());
+    let v2 = dp2(n, w, vws.clone());
+    if v1 != v2 {
+        panic!();
     } else {
-        dp3(n, w, vws)
-    };
-    puts!("{}\n", ans);
+        puts!("{}\n", v1);
+    }
 }

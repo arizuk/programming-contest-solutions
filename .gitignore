@@ -1,5 +1,6 @@
 input*
 output*
+exe_*
 main
 main.bash
 out
