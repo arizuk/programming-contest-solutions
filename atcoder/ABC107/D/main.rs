@@ -29,6 +29,11 @@ macro_rules! input_inner {
         let $var = read_value!($next, $t);
         input_inner!{$next $($r)*}
     };
+
+    ($next:expr, mut $var:ident : $t:tt $($r:tt)*) => {
+        let mut $var = read_value!($next, $t);
+        input_inner!{$next $($r)*}
+    };
 }
 
 #[allow(unused_macros)]
@@ -54,60 +59,132 @@ macro_rules! read_value {
     };
 }
 
-
-fn median(a: &[usize], x: usize) -> bool {
-    let mut s: Vec<i32> = vec![0; a.len()];
-    s[0] = if a[0] >= x { 1 } else { -1 };
-    for i in 1..a.len() {
-        s[i] = s[i-1] + if a[i] >= x { 1 } else { -1 };
+#[allow(unused_macros)]
+macro_rules! debug {
+    ($($a:expr),*) => {
+        #[cfg(debug_assertions)]
+        writeln!(&mut std::io::stderr(), concat!("[DEBUG] ", $(stringify!($a), "={:?} "),*), $($a),*);
     }
-    println!("{:?} a={:?} x={}", s, a, x);
-    // println!("x={}", x);
-
-    let mut cnt = 0;
-    let mut ttl = 0;
-    for l in 0..a.len() {
-        for r in l..a.len() {
-            let sum = s[r] - if l >= 1 { s[l-1] } else { 0 };
-            if sum >= 0 { cnt += 1 };
-            // println!("{:?} {}", &a[l..(r+1)], sum);
-            ttl += 1;
-        }
-    }
-    // println!("x={} cnt={} ttl={}", x, cnt, ttl);
-
-    let half = if ttl % 2 == 1 { ttl/2 + 1 } else { ttl/2 };
-    if cnt >= half { true } else { false }
 }
 
-fn solve(a: &[usize], b: &[usize]) -> usize {
-  let mut s = 0i32;
-  let mut e = a.len() as i32 - 1;
+#[allow(unused_imports)]
+use std::cmp::{min, max};
+#[allow(unused_imports)]
+use std::io::{stdout, stdin, BufWriter, Write};
 
-  let mut last_x = 0;
-  while s <= e {
-    let i = (s + e) / 2;
-    // println!("s={} e={} i={}", s, e, i);
-
-    let x = b[i as usize];
-    if median(a, x) {
-        // println!("{} is ok", x);
-        last_x = x;
-        s = i + 1;
-    } else {
-        // println!("{} is ng", x);
-        e = i - 1;
+pub mod ds {
+    use std::cmp::{min, PartialOrd};
+    use std::ops::{AddAssign, Sub};
+    #[derive(Debug)]
+    pub struct BIT<T> {
+        size: usize,
+        data: Vec<T>,
     }
-  }
-  last_x
+    impl<T> BIT<T>
+    where
+        T: Copy + AddAssign + Sub<Output = T> + PartialOrd + From<u16>,
+    {
+        pub fn new(size: usize) -> Self {
+            let buf_size = size.next_power_of_two();
+            BIT {
+                size: size,
+                data: vec![T::from(0u16); buf_size + 1],
+            }
+        }
+        #[doc = " [l, r) l,r: 1-indexed"]
+        pub fn sum_between(&self, l: usize, r: usize) -> T {
+            self.sum(r - 1) - self.sum(l - 1)
+        }
+        #[doc = " i: 1-indexed but returns 0 if i=0 is given."]
+        pub fn sum(&self, i: usize) -> T {
+            let mut i = i as i64;
+            let mut ret = T::from(0u16);
+            while i > 0 {
+                ret += self.data[i as usize];
+                i -= i & -i;
+            }
+            ret
+        }
+        #[doc = " i: 1-indexed"]
+        pub fn add(&mut self, i: usize, value: T) {
+            assert!(i > 0 && i <= self.size);
+            let n = self.data.len() as i64;
+            let mut i = i as i64;
+            while i <= n - 1 {
+                self.data[i as usize] += value;
+                i += i & -i;
+            }
+        }
+        pub fn lower_bound(&self, mut value: T) -> usize {
+            let zero = T::from(0u16);
+            if value <= zero {
+                return 0;
+            }
+            let n = self.data.len();
+            let mut x = 0;
+            let mut k = n - 1;
+            while k > 0 {
+                if x + k <= n - 1 && self.data[x + k] < value {
+                    value = value - self.data[x + k];
+                    x += k;
+                }
+                k /= 2;
+            }
+            x = min(x, self.size);
+            x + 1
+        }
+    }
+}
+use ds::BIT;
+
+fn is_ok(aa: &Vec<usize>, x: usize) -> bool {
+    let n = aa.len();
+    let offset = n as i64;
+    let mut total = 0i64;
+    let mut sum = 0;
+    let mut bit = BIT::new(2*n+1);
+    bit.add(offset as usize +1, 1);
+    for i in 0..n {
+        if aa[i] >= x {
+            total += 1;
+        } else {
+            total -= 1;
+        }
+
+        let pos = (total+offset+1) as usize;
+        sum += bit.sum(pos);
+        bit.add(pos, 1u64);
+    }
+    let num = n*(n+1)/2;
+    let ans = (num+1)/2 <= sum as usize;
+    debug!(x, (num+1)/2, sum, ans);
+    ans
 }
 
 fn main() {
-    input!{
-        n: usize,
-        a: [usize; n]
+    let out = std::io::stdout();
+    let mut out = BufWriter::new(out.lock());
+    macro_rules! puts {
+        ($($format:tt)*) => (write!(out,$($format)*).unwrap());
     }
-    let mut b = a.to_vec();
-    b.sort();
-    println!("{}", solve(&a, &b));
+
+    input!{
+      n: usize,
+      aa: [usize; n],
+    }
+    let mut bb = aa.clone();
+    bb.sort();
+
+    let mut ng = n as i64;
+    let mut ok = -1;
+    while (ok-ng).abs() > 1 {
+        let mid = (ok + ng) / 2;
+        debug!(mid);
+        if is_ok(&aa, bb[mid as usize]) {
+            ok = mid;
+        } else {
+            ng = mid;
+        }
+    }
+    puts!("{}\n", bb[ok as usize]);
 }
