@@ -81,6 +81,37 @@ fn main() {
 
     input!{
       n: usize,
-      lrs: [(usize, usize); 2],
+      lrs: [(i64, i64); n],
     }
+    let lrs: Vec<_> = lrs.into_iter().map(|(l, r)| (l, r+1)).collect();
+
+    let max_l = lrs.iter().map(|v|v.0).max().unwrap();
+    let min_r = lrs.iter().map(|v|v.1).min().unwrap();
+
+    let max_range = lrs.iter().map(|v| v.1 - v.0).max().unwrap();
+    let ans1 = max_range + max(min_r - max_l, 0);
+
+
+    let mut abs = lrs.into_iter().map(|(l, r)| {
+            (
+                max(r - max_l, 0),
+                max(min_r - l, 0),
+            )
+        })
+        .collect::<Vec<_>>();
+    abs.sort_by_key(|v| (v.0, -1 * v.1));
+
+    debug!(abs);
+
+    let (_, mut min_b) = abs[0];
+    let (mut min_a, _) = abs[1];
+    let mut ans2 = min_a + min_b;
+    for i in 1..(n - 1) {
+        let (_, b) = abs[i];
+        min_b = min(min_b, b);
+        let (a, _) = abs[i + 1];
+        min_a = a;
+        ans2 = max(ans2, min_a + min_b);
+    }
+    puts!("{}\n", max(ans1, ans2));
 }
