@@ -80,12 +80,37 @@ fn main() {
     }
 
     input!{
-      n: u8,
-      mut s: chars,
+      m: usize,
+      dcs: [(usize, usize); m],
     }
-    let ans = s.into_iter()
-        .map(|c| ((c.to_digit(36).unwrap() - 10) as u8 + n) % 26 + 'A' as u8 )
-        .map(|v| v as char)
-        .collect::<String>();
+
+    let mut ans: usize = 0;
+    let mut rems = vec![];
+    for (mut d, mut c) in dcs {
+        while c>0 {
+            if c%2 == 1 {
+                rems.push(d)
+            }
+            ans += c/2;
+            if d >= 5 {
+                ans += c/2;
+            }
+            d *= 2;
+            d = d/10 + d%10;
+            c /= 2;
+        }
+    }
+
+    if rems.len() > 0 {
+        let mut cur = rems[0];
+        for i in 1..rems.len() {
+            cur += rems[i];
+            ans += 1;
+            if cur >= 10 {
+                cur = cur/10 + cur%10;
+                ans += 1;
+            }
+        }
+    }
     puts!("{}\n", ans);
 }

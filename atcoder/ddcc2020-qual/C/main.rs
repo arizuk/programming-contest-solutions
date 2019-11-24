@@ -80,12 +80,59 @@ fn main() {
     }
 
     input!{
-      n: u8,
-      mut s: chars,
+      h: usize,
+      w: usize,
+      k: usize,
+      ss: [chars; h],
     }
-    let ans = s.into_iter()
-        .map(|c| ((c.to_digit(36).unwrap() - 10) as u8 + n) % 26 + 'A' as u8 )
-        .map(|v| v as char)
-        .collect::<String>();
-    puts!("{}\n", ans);
+
+    let mut ans = vec![vec![0; w]; h];
+    let mut cur = 0;
+    for i in 0..h {
+        for j in 0..w {
+            if ss[i][j] == '#' {
+                cur += 1;
+                ans[i][j] = cur;
+                for k in (0..j).rev() {
+                    if ans[i][k] != 0 {
+                        break;
+                    }
+                    ans[i][k] = ans[i][j];
+                }
+            }
+        }
+
+        for j in 1..w {
+            if ans[i][j] == 0 {
+                ans[i][j] = ans[i][j-1];
+            }
+        }
+    }
+
+    for i in 0..h-1 {
+        for j in 0..w {
+            if ans[i+1][j] == 0 {
+                ans[i+1][j] = ans[i][j];
+            }
+        }
+    }
+
+    for i in (1..h).rev() {
+        for j in 0..w {
+            if ans[i-1][j] == 0 {
+                ans[i-1][j] = ans[i][j];
+            }
+        }
+    }
+
+    for a in ans {
+        for i in 0..a.len() {
+            if i == a.len() - 1 {
+                puts!("{}", a[i]);
+            } else {
+                puts!("{} ", a[i]);
+            }
+        }
+        puts!("\n")
+    }
 }

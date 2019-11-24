@@ -72,13 +72,8 @@ use std::cmp::{min, max};
 #[allow(unused_imports)]
 use std::io::{stdout, stdin, BufWriter, Write};
 
-fn digit(mut n: usize) -> usize {
-    let mut d = 0;
-    while n > 0 {
-        n /= 10;
-        d += 1;
-    }
-    d
+fn digit(n: usize) -> usize {
+    n.to_string().len()
 }
 
 fn is_ok(n: usize, a: usize, b: usize, x: usize) -> bool {
@@ -101,11 +96,11 @@ fn main() {
     let mut ok = 0 as i64;
     let mut ng = 1e9 as i64 + 1;
     while (ok-ng).abs() > 1 {
-        let mid = (ok + ng) / 2;
-        if is_ok(mid as usize, a, b, x) {
-            ok = mid;
+        let n = ((ok + ng) / 2) as usize;
+        if a * n + b * digit(n) <= x {
+            ok = n as i64;
         } else {
-            ng = mid;
+            ng = n as i64;
         }
     }
     puts!("{}\n", ok);

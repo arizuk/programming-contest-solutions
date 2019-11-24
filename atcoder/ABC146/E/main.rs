@@ -81,39 +81,30 @@ fn main() {
 
     input!{
       n: usize,
-      k: i64,
-      aa: [i64; n],
+      k: usize,
+      aa: [usize; n],
     }
 
     let mut acm = vec![0; n+1];
-    let mut acm2 = vec![0; n];
     for i in 0..n {
         acm[i+1] = (acm[i] + aa[i]) % k;
-        // acm2[i] = acm[i+1] + k + (-1 * ((i+1) as i64)) % k;
-        // acm2[i] %= k;
-        acm2[i] = acm[i+1] + (-1 * ((i+1) as i64));
     }
-    debug!(acm2);
 
     use std::collections::HashMap;
     let mut map = HashMap::new();
-    for &v in acm2.iter() {
-        *map.entry(v).or_insert(0) += 1;
-    }
-
-    let mut ans = 0;
-    for i in 0..n {
-        let acm_i = acm[i];
-        let value = acm_i - i as i64;
-
-        debug!(i, acm_i, value);
-
-        if map.contains_key(&value) {
-            ans += map[&value];
-            debug!(i, ans, map[&value]);
+    let mut ans: usize = 0;
+    for i in 0..n+1 {
+        if i >= k {
+            let j = i - k;
+            let key = (acm[j] + k - (j%k)) % k;
+            *map.entry(key).or_insert(0) -= 1;
         }
 
-        *map.entry(acm2[i]).or_insert(0) -= 1;
+        let key = (acm[i] + k - (i%k)) % k;
+        if map.contains_key(&key) {
+            ans += map[&key];
+        }
+        *map.entry(key).or_insert(0) += 1;
     }
     puts!("{}\n", ans);
 }
