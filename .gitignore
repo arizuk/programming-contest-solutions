@@ -1,3 +1,4 @@
+# test files and binaries
 input*
 output*
 exe_*
@@ -8,4 +9,6 @@ a.out
 debug
 *.html
 p
+
 .envrc
+.vscode
